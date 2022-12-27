@@ -5,7 +5,7 @@ a simple hello world window
 import PySimpleGUI as sg
 
 
-def open() -> None:
+def create() -> None:
     '''
     creates a hello world window
     '''
@@ -22,7 +22,7 @@ def open() -> None:
 
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Ok':
+        if event in (sg.WIN_CLOSED, 'Ok'):
             break
 
     window.close()
