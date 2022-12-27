@@ -21,7 +21,7 @@ def create() -> None:
     window = sg.Window('hello_world', layout, size=(400, 200))
 
     while True:
-        event, values = window.read()
+        event, _ = window.read()
         if event in (sg.WIN_CLOSED, 'Ok'):
             break
 
