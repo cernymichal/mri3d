@@ -14,23 +14,32 @@ class Dataset:
         self.ds = pydicom.dcmread(self.base_dir)
         self.root_dir = Path(self.ds.filename).resolve().parent
 
+    def has_any_series(self) -> bool:
+        for patient in self.ds.patient_records:
+            for study in get_studies(patient):
+                if get_series(study):
+                    return True
+
+        return False
+
     def __str__(self) -> str:
         return str(self.ds)
 
 
-def get_studies(patient) -> list:
+def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+    # TODO generators?
     return [child for child in patient.children if child.DirectoryRecordType == "STUDY"]
 
 
-def get_series(study) -> list:
+def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     return [child for child in study.children if child.DirectoryRecordType == "SERIES"]
 
 
-def get_images(series) -> list:
+def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     return [child for child in series.children if child.DirectoryRecordType == "IMAGE"]
 
 
-def get_volume(images, ds: Dataset) -> Volume:
+def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     paths = [image["ReferencedFileID"] for image in images]
     # relative path to list of str
     paths = [[path.value] if path.VM == 1 else path.value for path in paths]
@@ -43,10 +52,7 @@ def get_volume(images, ds: Dataset) -> Volume:
     slices.sort(key=lambda s: float(s.SliceLocation), reverse=True)
 
     pixel_data = np.array([slice.pixel_array for slice in slices])
-    pixel_data = np.rot90(pixel_data, k=1, axes=(2, 0))
-    pixel_data = np.flip(pixel_data, axis=(1))
-
-    spacing = (*slices[0].PixelSpacing, slices[0].SliceThickness)
+    spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)
 
     return Volume(pixel_data, spacing)
 

@@ -2,14 +2,16 @@
 TODO
 '''
 
+from __future__ import annotations
 from pathlib import Path
 import os
 import PySimpleGUI as sg
+import pydicom
 from src import parsedicom
 from . import TITLE, ICON
 
 
-def get_dicomdir() -> Path:
+def get_dicomdir() -> Path | None:
     '''
     TODO
     '''
@@ -43,21 +45,18 @@ def _choose_series_get_options(ds: parsedicom.Dataset, indices: tuple[int, int, 
     return (patients_labels, studies_labels, series_labels)
 
 
-def choose_series(ds: parsedicom.Dataset):
+def choose_series(ds: parsedicom.Dataset) -> pydicom.dataset.Dataset | None:
     '''
     TODO
     '''
 
-    # TODO doesnt update much idk why
-    patients, studies, series = _choose_series_get_options(ds)
-
     layout = [[sg.Text('Choose a series to load')],
               [sg.Text('Patient:', size=(9, 1)), sg.Combo(
-                  patients, size=(40, 1), enable_events=True, key='-patient-')],
+                  [], size=(40, 1), enable_events=True, key='-patient-')],
               [sg.Text('Study:', size=(9, 1)), sg.Combo(
-                  studies, size=(40, 1), enable_events=True, key='-study-')],
+                  [], size=(40, 1), enable_events=True, key='-study-')],
               [sg.Text('Series:', size=(9, 1)), sg.Combo(
-                  series, size=(40, 1), key='-series-')],
+                  [], size=(40, 1), key='-series-')],
               [sg.Button('Ok'), sg.Button('Cancel')]]
 
     window = sg.Window(TITLE, layout, size=(390, 200), icon=ICON)
@@ -69,9 +68,9 @@ def choose_series(ds: parsedicom.Dataset):
 
     while True:
         patients, studies, series = _choose_series_get_options(ds, indices)
-        window['-patient-'].update(patients, set_to_index=indices[0])
-        window['-study-'].update(studies, set_to_index=indices[1])
-        window['-series-'].update(series, set_to_index=indices[2])
+        window['-patient-'].update(values=patients, set_to_index=indices[0])
+        window['-study-'].update(values=studies, set_to_index=indices[1])
+        window['-series-'].update(values=series, set_to_index=indices[2])
 
         event, _ = window.read()
 
@@ -90,9 +89,14 @@ def choose_series(ds: parsedicom.Dataset):
 
     window.close()
 
-    patient = ds.ds.patient_records[indices[0]]
-    study = parsedicom.get_studies(patient)[indices[1]]
-    series = parsedicom.get_series(study)[indices[2]]
+    if not ok:
+        return None
 
-    # TODO check invalid stuff
-    return series if ok else None
+    try:
+        patient = ds.ds.patient_records[indices[0]]
+        study = parsedicom.get_studies(patient)[indices[1]]
+        series = parsedicom.get_series(study)[indices[2]]
+    except IndexError:
+        return None
+
+    return series
