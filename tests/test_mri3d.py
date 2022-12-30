@@ -12,14 +12,8 @@ def linter():
     """Test codestyle for mri3d"""
     rep = CollectingReporter()
 
-    # disabled warnings:
-    # 0301 line too long
-    # 0103 variables name (does not like shorter than 2 chars)
-    # R0913 Too many arguments (6/5) (too-many-arguments)
-    # R0914 Too many local variables (18/15) (too-many-locals)
-    # W0511 (fixme)
     r = Run(
-        ["--disable=C0301,C0103,R0913,R0914,W0511", "-sn", "./mri3d"],
+        ["-sn", "./mri3d"],
         reporter=rep,
         exit=False,
     )

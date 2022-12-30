@@ -3,8 +3,8 @@ TODO
 '''
 
 import gui.dicomdir
+import gui.main_view
 from src import parsedicom
-#import open3d as o3d
 
 
 def main():
@@ -27,15 +27,9 @@ def main():
         return
 
     images = parsedicom.get_images(series)
-    volume = parsedicom.get_volume(images, dcm) # TODO error check
+    volume = parsedicom.get_volume(images, dcm)  # TODO error check
 
-    print(volume.rotate90(1, 1))
-
-    print("generating point cloud")
-    cloud = volume.to_point_cloud()
-    print("done")
-    print(cloud)
-    #o3d.visualization.draw_geometries([cloud])
+    gui.main_view.create(volume)
 
 
 main()

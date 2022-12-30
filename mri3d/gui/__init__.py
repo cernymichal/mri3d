@@ -2,9 +2,11 @@
 mri3d gui components module
 '''
 
-import PySimpleGUI as sg
+import os
+import PySimpleGUIQt as sg
 
 TITLE = 'mri3d'
 ICON = sg.DEFAULT_WINDOW_ICON
 
-sg.theme('DarkBrown')
+os.environ["QT_API"] = "pyside2"
+sg.ChangeLookAndFeel('DarkBrown')

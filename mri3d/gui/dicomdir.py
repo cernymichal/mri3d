@@ -10,6 +10,8 @@ import pydicom
 from src import parsedicom
 from . import TITLE, ICON
 
+# TODO port to qt
+
 
 def get_dicomdir() -> Path | None:
     '''

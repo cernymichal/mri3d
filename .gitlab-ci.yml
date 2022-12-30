@@ -21,6 +21,7 @@ stages:
   - test
 
 before_script:
+  - apt-get update && apt-get install libgl1 -y
   - python --version
   - pip install --upgrade pip >/dev/null
   - python -m venv .venv
