@@ -51,10 +51,17 @@ def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     # sort to physical order
     slices.sort(key=lambda s: float(s.SliceLocation), reverse=True)
 
+    # (0028, 0002) Samples per Pixel
+    if slices[0][(0x0028, 0x0002)].value != 1:
+        raise Exception("color data not supported")  # TODO
+
     pixel_data = np.array([slice.pixel_array for slice in slices])
     spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)
+    # (0028, 0101) Bits Stored
+    # TODO uint assumed
+    value_range = (0, 2 ** slices[0][(0x0028, 0x0101)].value - 1)
 
-    return Volume(pixel_data, spacing)
+    return Volume(pixel_data, spacing, value_range)
 
 
 def test_func(x: int) -> int:

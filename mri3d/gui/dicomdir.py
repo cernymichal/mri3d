@@ -36,10 +36,17 @@ def _choose_series_get_options(ds: parsedicom.Dataset, indices: tuple[int, int, 
     studies = parsedicom.get_studies(patients[indices[0]])
     series = parsedicom.get_series(studies[indices[1]])
 
+    # (0010, 0010) Patient's Name
+    # (0010, 0020) Patient ID
     patients_labels = [
         f'{patient[(0x0010, 0x0010)].value} - {patient[(0x0010, 0x0020)].value}' for patient in patients]
+
+    # (0020, 0010) Study ID
+    # (0008, 1030) Study Description
     studies_labels = [
         f'{study[(0x0020, 0x0010)].value} - {study[(0x0008, 0x1030)].value}' for study in studies]
+
+    # (0020, 0011) Series Number
     series_labels = [str(series[(0x0020, 0x0011)].value) for series in series]
 
     return (patients_labels, studies_labels, series_labels)
