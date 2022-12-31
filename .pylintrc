@@ -2,7 +2,7 @@
 init-hook='import sys; sys.path.append("./mri3d")'
 
 [TYPECHECK]
-ignored-modules=PySimpleGUIQt
+ignored-modules=PySimpleGUIQt, PySide2.QtWidgets
 
 # disabled warnings:
 # 0301 line too long

@@ -9,12 +9,20 @@ from ..volume import Volume
 
 
 class Dataset:
+    '''
+    TODO
+    '''
+
     def __init__(self, path: Path):
         self.base_dir = path
         self.ds = pydicom.dcmread(self.base_dir)
         self.root_dir = Path(self.ds.filename).resolve().parent
 
     def has_any_series(self) -> bool:
+        '''
+        TODO
+        '''
+
         for patient in self.ds.patient_records:
             for study in get_studies(patient):
                 if get_series(study):
@@ -27,19 +35,35 @@ class Dataset:
 
 
 def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+    '''
+    TODO
+    '''
+
     # TODO generators?
     return [child for child in patient.children if child.DirectoryRecordType == "STUDY"]
 
 
 def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+    '''
+    TODO
+    '''
+
     return [child for child in study.children if child.DirectoryRecordType == "SERIES"]
 
 
 def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+    '''
+    TODO
+    '''
+
     return [child for child in series.children if child.DirectoryRecordType == "IMAGE"]
 
 
 def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
+    '''
+    TODO
+    '''
+
     paths = [image["ReferencedFileID"] for image in images]
     # relative path to list of str
     paths = [[path.value] if path.VM == 1 else path.value for path in paths]
@@ -65,4 +89,8 @@ def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
 
 
 def test_func(x: int) -> int:
+    '''
+    TODO
+    '''
+
     return x

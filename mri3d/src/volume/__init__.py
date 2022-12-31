@@ -17,6 +17,10 @@ class Volume:
         self.value_range = value_range
 
     def rotate90(self, axis: int, k: int = 1) -> Volume:
+        '''
+        TODO
+        '''
+
         axes = ((1, 2), (2, 0), (0, 1))[axis]
         self.data = np.rot90(self.data, k=k, axes=axes)
 
