@@ -7,6 +7,7 @@ from PySide2.QtWidgets import QVBoxLayout
 from pyvistaqt import QtInteractor
 import pyvista as pv
 from src.volume import Volume
+from . import View
 
 OPACITY_TRANSFER_LINEAR = 'linear'
 OPACITY_TRANSFER_SIGMOID = 'sigmoid'
@@ -20,7 +21,7 @@ class VolumePlotter(QtInteractor):
     '''
 
     def __init__(self, *args, background_color: Any = 'black', border_color: Any = None, opacity_transfer: Any = None, **kwargs):
-        QtInteractor.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.set_background(background_color)
         if border_color is not None:
             self.renderer.add_border(border_color, width=2.0)
@@ -64,3 +65,58 @@ class VolumePlotter(QtInteractor):
         '''
 
         vbox_layout.addWidget(self.interactor)
+
+
+class ViewWithVolumePlot(View):
+    '''
+    TODO
+    '''
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.plotter = None
+
+    def add_plotter(self, *args, column_key: str = '-plot-', **kwargs) -> None:
+        '''
+        TODO
+        '''
+
+        self.plotter = VolumePlotter(
+            self.window.QT_QMainWindow, *args, **kwargs)
+        self.plotter.hook_widget(self.window[column_key].vbox_layout)
+
+    def remove_plotter(self) -> None:
+        '''
+        TODO
+        '''
+
+        if self.plotter is not None:
+            self.plotter.close()
+            self.plotter = None
+
+    def on_close(self) -> None:
+        '''
+        TODO
+        '''
+
+        if self.plotter is not None:
+            self.plotter.close()
+        super().on_close()
+
+    def enable(self) -> None:
+        '''
+        TODO
+        '''
+
+        super().enable()
+        if self.plotter is not None:
+            self.plotter.enable()
+
+    def disable(self) -> None:
+        '''
+        TODO
+        '''
+
+        if self.plotter is not None:
+            self.plotter.disable()
+        super().disable()
