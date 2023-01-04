@@ -2,10 +2,13 @@
 TODO
 '''
 
+from __future__ import annotations
+from dataclasses import dataclass
 from pathlib import Path
 import numpy as np
 import pydicom
 from ..volume import Volume
+from .dicom_indices import *
 
 
 class Dataset:
@@ -59,7 +62,7 @@ def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]
     return [child for child in series.children if child.DirectoryRecordType == "IMAGE"]
 
 
-def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
+def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     '''
     TODO
     '''
@@ -75,22 +78,58 @@ def get_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     # sort to physical order
     slices.sort(key=lambda s: float(s.SliceLocation), reverse=True)
 
-    # (0028, 0002) Samples per Pixel
-    if slices[0][(0x0028, 0x0002)].value != 1:
+    if slices[0][IMAGE_SAMPLES_PER_PIXEL_INDEX].value != 1:
         raise Exception("color data not supported")  # TODO
 
     pixel_data = np.array([slice.pixel_array for slice in slices])
     spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)
-    # (0028, 0101) Bits Stored
     # TODO uint assumed
-    value_range = (0, 2 ** slices[0][(0x0028, 0x0101)].value - 1)
+    value_range = (0, 2 ** slices[0][IMAGE_BITS_STORED_INDEX].value - 1)
 
     return Volume(pixel_data, spacing, value_range)
 
 
-def test_func(x: int) -> int:
+@dataclass
+class Patient:
     '''
     TODO
     '''
 
-    return x
+    name: str
+    sex: str
+    identification: str
+
+    @classmethod
+    def from_dicom(cls, patient: pydicom.dataset.Dataset) -> Patient:
+        '''
+        TODO
+        '''
+
+        return cls(
+            name=patient[PATIENT_NAME_INDEX].value,
+            identification=patient[PATIENT_ID_INDEX].value,
+            sex=patient[PATIENT_SEX_INDEX].value
+        )
+
+
+@dataclass
+class Series:
+    '''
+    TODO
+    '''
+
+    number: str
+    study: str
+    study_description: str
+
+    @classmethod
+    def from_dicom(cls, study: pydicom.dataset.Dataset, series: pydicom.dataset.Dataset) -> Series:
+        '''
+        TODO
+        '''
+
+        return cls(
+            number=series[SERIES_NUMBER_INDEX].value,
+            study=study[STUDY_ID_INDEX].value,
+            study_description=study[STUDY_DESCRIPTION_INDEX].value
+        )

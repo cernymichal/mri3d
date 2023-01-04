@@ -3,7 +3,8 @@ TODO
 '''
 
 import gui.dicomdir
-import gui.main_view
+import gui.exporter
+from src import ApplicationState, Patient, Series
 from src import parsedicom
 
 
@@ -21,15 +22,22 @@ def main():
         # TODO add popup
         return
 
-    series = gui.dicomdir.choose_series(dcm)
+    patient, study, series = gui.dicomdir.choose_series(dcm)
     if series is None:
         # TODO add popup
         return
 
     images = parsedicom.get_images(series)
-    volume = parsedicom.get_volume(images, dcm)  # TODO error check
+    volume = parsedicom.create_volume(images, dcm)  # TODO error check
 
-    gui.main_view.create(volume)
+    state = ApplicationState(
+        volume=volume,
+        patient=Patient.from_dicom(patient),
+        series=Series.from_dicom(study, series))
+
+    del patient, study, series, images
+
+    gui.exporter.main_view(state)
 
 
 main()

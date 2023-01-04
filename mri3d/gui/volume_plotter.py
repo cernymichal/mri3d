@@ -11,7 +11,7 @@ from src.volume import Volume
 OPACITY_TRANSFER_LINEAR = 'linear'
 OPACITY_TRANSFER_SIGMOID = 'sigmoid'
 OPACITY_TRANSFER_SEETHROUGH = [0, 0, .1]
-SCALAR_BAR_ARGS = {'title': '', 'label_font_size': 14, 'fmt': ' % .3f'}
+SCALAR_BAR_ARGS = {'title': '', 'label_font_size': 14, 'fmt': ' % .3'}
 
 
 class VolumePlotter(QtInteractor):
@@ -19,9 +19,11 @@ class VolumePlotter(QtInteractor):
     TODO
     '''
 
-    def __init__(self, *args, background_color: Any = 'black', opacity_transfer: Any = None, **kwargs):
+    def __init__(self, *args, background_color: Any = 'black', border_color: Any = None, opacity_transfer: Any = None, **kwargs):
         QtInteractor.__init__(self, *args, **kwargs)
         self.set_background(background_color)
+        if border_color is not None:
+            self.renderer.add_border(border_color, width=2.0)
         # plotter.enable_anti_aliasing()
         self.show_axes()
 

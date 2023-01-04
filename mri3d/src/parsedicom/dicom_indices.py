@@ -1,0 +1,14 @@
+'''
+dicom attribute indicies defined by the standard
+
+https://dicom.innolitics.com/ciods/mr-image
+'''
+
+PATIENT_NAME_INDEX = (0x0010, 0x0010)
+PATIENT_ID_INDEX = (0x0010, 0x0020)
+PATIENT_SEX_INDEX = (0x0010, 0x0040)
+STUDY_ID_INDEX = (0x0020, 0x0010)
+STUDY_DESCRIPTION_INDEX = (0x0008, 0x1030)
+SERIES_NUMBER_INDEX = (0x0020, 0x0011)
+IMAGE_SAMPLES_PER_PIXEL_INDEX = (0x0028, 0x0002)
+IMAGE_BITS_STORED_INDEX = (0x0028, 0x0101)

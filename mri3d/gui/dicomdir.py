@@ -8,6 +8,7 @@ import os
 import PySimpleGUI as sg
 import pydicom
 from src import parsedicom
+from src.parsedicom.dicom_indices import PATIENT_NAME_INDEX, PATIENT_ID_INDEX, STUDY_ID_INDEX, STUDY_DESCRIPTION_INDEX, SERIES_NUMBER_INDEX
 from . import TITLE, ICON
 
 # TODO port to qt
@@ -38,23 +39,19 @@ def _choose_series_get_options(ds: parsedicom.Dataset, indices: tuple[int, int, 
     studies = parsedicom.get_studies(patients[indices[0]])
     series = parsedicom.get_series(studies[indices[1]])
 
-    # (0010, 0010) Patient's Name
-    # (0010, 0020) Patient ID
     patients_labels = [
-        f'{patient[(0x0010, 0x0010)].value} - {patient[(0x0010, 0x0020)].value}' for patient in patients]
+        f'{patient[PATIENT_NAME_INDEX].value} - {patient[PATIENT_ID_INDEX].value}' for patient in patients]
 
-    # (0020, 0010) Study ID
-    # (0008, 1030) Study Description
     studies_labels = [
-        f'{study[(0x0020, 0x0010)].value} - {study[(0x0008, 0x1030)].value}' for study in studies]
+        f'{study[STUDY_ID_INDEX].value} - {study[STUDY_DESCRIPTION_INDEX].value}' for study in studies]
 
-    # (0020, 0011) Series Number
-    series_labels = [str(series[(0x0020, 0x0011)].value) for series in series]
+    series_labels = [str(series[SERIES_NUMBER_INDEX].value)
+                     for series in series]
 
     return (patients_labels, studies_labels, series_labels)
 
 
-def choose_series(ds: parsedicom.Dataset) -> pydicom.dataset.Dataset | None:
+def choose_series(ds: parsedicom.Dataset) -> tuple[pydicom.dataset.Dataset, pydicom.dataset.Dataset, pydicom.dataset.Dataset] | None:
     '''
     TODO
     '''
@@ -108,4 +105,4 @@ def choose_series(ds: parsedicom.Dataset) -> pydicom.dataset.Dataset | None:
     except IndexError:
         return None
 
-    return series
+    return (patient, study, series)
