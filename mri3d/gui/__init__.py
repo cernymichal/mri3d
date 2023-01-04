@@ -2,6 +2,7 @@
 mri3d gui components module
 '''
 
+from __future__ import annotations
 from typing import Any
 import os
 import PySimpleGUIQt as sg
@@ -31,7 +32,7 @@ class View:
 
         return True
 
-    def run(self) -> None:
+    def run(self) -> View:
         '''
         TODO
         '''
@@ -42,24 +43,27 @@ class View:
                 break
 
         self.on_close()
+        return self
 
     def on_close(self) -> None:
         '''
         TODO
         '''
 
-        self.window.close()
+        self.window.Close()
 
-    def enable(self) -> None:
+    def enable(self) -> View:
         '''
         TODO
         '''
 
         self.window.Enable()
+        return self
 
-    def disable(self) -> None:
+    def disable(self) -> View:
         '''
         TODO
         '''
 
         self.window.Disable()
+        return self

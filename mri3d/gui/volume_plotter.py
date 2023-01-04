@@ -2,6 +2,7 @@
 TODO
 '''
 
+from __future__ import annotations
 from typing import Any
 from PySide2.QtWidgets import QVBoxLayout
 from pyvistaqt import QtInteractor
@@ -66,6 +67,11 @@ class VolumePlotter(QtInteractor):
 
         vbox_layout.addWidget(self.interactor)
 
+    def close(self) -> None:
+        # pylint doesn't see close() on super() for some reason
+        QtInteractor.close(self)
+        self.deep_clean()
+
 
 class ViewWithVolumePlot(View):
     '''
@@ -76,7 +82,7 @@ class ViewWithVolumePlot(View):
         super().__init__(*args, **kwargs)
         self.plotter = None
 
-    def add_plotter(self, *args, column_key: str = '-plot-', **kwargs) -> None:
+    def add_plotter(self, *args, column_key: str = '-plot-', **kwargs) -> ViewWithVolumePlot:
         '''
         TODO
         '''
@@ -84,15 +90,18 @@ class ViewWithVolumePlot(View):
         self.plotter = VolumePlotter(
             self.window.QT_QMainWindow, *args, **kwargs)
         self.plotter.hook_widget(self.window[column_key].vbox_layout)
+        return self
 
-    def remove_plotter(self) -> None:
+    def remove_plotter(self) -> ViewWithVolumePlot:
         '''
         TODO
         '''
 
         if self.plotter is not None:
             self.plotter.close()
+            self.plotter.deep_clean()
             self.plotter = None
+        return self
 
     def on_close(self) -> None:
         '''
@@ -103,7 +112,7 @@ class ViewWithVolumePlot(View):
             self.plotter.close()
         super().on_close()
 
-    def enable(self) -> None:
+    def enable(self) -> ViewWithVolumePlot:
         '''
         TODO
         '''
@@ -111,8 +120,9 @@ class ViewWithVolumePlot(View):
         super().enable()
         if self.plotter is not None:
             self.plotter.enable()
+        return self
 
-    def disable(self) -> None:
+    def disable(self) -> ViewWithVolumePlot:
         '''
         TODO
         '''
@@ -120,3 +130,4 @@ class ViewWithVolumePlot(View):
         if self.plotter is not None:
             self.plotter.disable()
         super().disable()
+        return self
