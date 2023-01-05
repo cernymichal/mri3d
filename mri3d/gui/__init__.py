@@ -16,7 +16,7 @@ sg.ChangeLookAndFeel('DarkBrown')
 
 class View:
     '''
-    TODO
+    PySimpleGUIQt window wrapper
     '''
 
     def __init__(self, *args, **kwargs) -> None:
@@ -24,7 +24,9 @@ class View:
 
     def handle_events(self, event: Any, _: dict) -> bool:  # _ = values
         '''
-        TODO
+        handle a user event
+
+        returns if the event loop should continue
         '''
 
         if event == sg.WIN_CLOSED:
@@ -34,7 +36,9 @@ class View:
 
     def run(self) -> View:
         '''
-        TODO
+        run window loop handeling user events
+
+        returns self
         '''
 
         while True:
@@ -47,14 +51,16 @@ class View:
 
     def on_close(self) -> None:
         '''
-        TODO
+        called at the end of view.run()
         '''
 
         self.window.Close()
 
     def enable(self) -> View:
         '''
-        TODO
+        enable window interaction
+
+        returns self
         '''
 
         self.window.Enable()
@@ -62,7 +68,9 @@ class View:
 
     def disable(self) -> View:
         '''
-        TODO
+        disable window interaction
+
+        returns self
         '''
 
         self.window.Disable()

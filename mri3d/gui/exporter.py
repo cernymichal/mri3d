@@ -1,7 +1,8 @@
 '''
-TODO
+views for editing and exporting a Volume
 '''
 
+from __future__ import annotations
 from typing import Any
 import PySimpleGUIQt as sg
 from src import ApplicationState
@@ -11,7 +12,7 @@ from . import TITLE, ICON
 
 class StateView(ViewWithVolumePlot):
     '''
-    TODO
+    a view prepared for showing ApplicationState
     '''
 
     def __init__(self, state: ApplicationState, *args, **kwargs) -> None:
@@ -20,21 +21,21 @@ class StateView(ViewWithVolumePlot):
 
     def patient_str(self) -> str:
         '''
-        TODO
+        parse state patient information into a string
         '''
 
         return f'Patient: {self.state.patient.name} ({self.state.patient.sex}, {self.state.patient.identification})'
 
     def series_str(self) -> str:
         '''
-        TODO
+        parse state series information into a string
         '''
 
         return f'Series: {self.state.series.study_description} - {self.state.series.number}'
 
     def resolution_str(self) -> str:
         '''
-        TODO
+        parse state volume resolution into a string
         '''
 
         return (f'Resolution: {self.state.volume.data.shape[0]}x{self.state.volume.data.shape[1]}x{self.state.volume.data.shape[2]} '
@@ -43,7 +44,9 @@ class StateView(ViewWithVolumePlot):
 
 class MainView(StateView):
     '''
-    TODO
+    main view of the application
+
+    preview and rotate volume, offers export options
     '''
 
     def __init__(self, state: ApplicationState) -> None:
@@ -61,10 +64,6 @@ class MainView(StateView):
         self.enable()
 
     def handle_events(self, event: Any, _: dict) -> bool:
-        '''
-        TODO
-        '''
-
         if event == sg.WIN_CLOSED:
             return False
 
@@ -87,27 +86,22 @@ class MainView(StateView):
 
         return True
 
-    def enable(self) -> None:
-        '''
-        TODO
-        '''
-
+    def enable(self) -> MainView:
         self.add_plotter(background_color=sg.theme_background_color())
         self.plotter.plot_volume(self.state.volume)
         super().enable()
+        return self
 
-    def disable(self) -> None:
-        '''
-        TODO
-        '''
-
+    def disable(self) -> MainView:
         super().disable()
+        # also remove the plotter to avoid OpenGL errors
         self.remove_plotter()
+        return self
 
 
 class ExportView(StateView):
     '''
-    TODO
+    view for exporting a Volume to matrix based formats
     '''
 
     def __init__(self, state: ApplicationState) -> None:
@@ -125,10 +119,6 @@ class ExportView(StateView):
         self.plotter.plot_volume(self.state.volume)
 
     def handle_events(self, event: Any, _: dict) -> bool:
-        '''
-        TODO
-        '''
-
         if event == sg.WIN_CLOSED:
             return False
 
@@ -149,7 +139,7 @@ class ExportView(StateView):
 
 class MeshView(StateView):
     '''
-    TODO
+    view for creating a mesh from a Volume
     '''
 
     def __init__(self, state: ApplicationState) -> None:
@@ -167,10 +157,6 @@ class MeshView(StateView):
         self.plotter.plot_volume(self.state.volume)
 
     def handle_events(self, event: Any, _: dict) -> bool:
-        '''
-        TODO
-        '''
-
         if event == sg.WIN_CLOSED:
             return False
 

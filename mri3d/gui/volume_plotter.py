@@ -1,5 +1,5 @@
 '''
-TODO
+classes for Volume plotting in Qt
 '''
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ SCALAR_BAR_ARGS = {'title': '', 'label_font_size': 14, 'fmt': ' % .3'}
 
 class VolumePlotter(QtInteractor):
     '''
-    TODO
+    QtWidget wrapper for plotting a Volume onto a PySimpleGUIQt element
     '''
 
     def __init__(self, *args, background_color: Any = 'black', border_color: Any = None, opacity_transfer: Any = None, **kwargs):
@@ -37,7 +37,7 @@ class VolumePlotter(QtInteractor):
     @classmethod
     def get_ugrid_from_volume(cls, volume: Volume) -> pv.UniformGrid:
         '''
-        TODO
+        returns pyvista.UniformGrid created from Volume
         '''
 
         grid = pv.UniformGrid()
@@ -46,9 +46,11 @@ class VolumePlotter(QtInteractor):
         grid.point_data['values'] = volume.data.flatten(order='F')
         return grid
 
-    def plot_volume(self, volume: Volume, cmap='bone', show_scalar_bar=False) -> None:
+    def plot_volume(self, volume: Volume, cmap='bone', show_scalar_bar=False) -> VolumePlotter:
         '''
-        TODO
+        reset and add a Volume to the plot scene
+
+        returns self
         '''
 
         ugrid = self.get_ugrid_from_volume(volume)
@@ -59,13 +61,17 @@ class VolumePlotter(QtInteractor):
         self.add_volume(ugrid, clim=volume.value_range, cmap=cmap, opacity=self.opacity_transfer,
                         show_scalar_bar=show_scalar_bar, scalar_bar_args=SCALAR_BAR_ARGS)
         self.add_bounding_box(color='white')
+        return self
 
-    def hook_widget(self, vbox_layout: QVBoxLayout) -> None:
+    def hook_widget(self, vbox_layout: QVBoxLayout) -> VolumePlotter:
         '''
-        TODO
+        hook this plotter to a Qt element
+
+        returns self
         '''
 
         vbox_layout.addWidget(self.interactor)
+        return self
 
     def close(self) -> None:
         # pylint doesn't see close() on super() for some reason
@@ -75,7 +81,7 @@ class VolumePlotter(QtInteractor):
 
 class ViewWithVolumePlot(View):
     '''
-    TODO
+    view with a single VolumePlotter element
     '''
 
     def __init__(self, *args, **kwargs) -> None:
@@ -84,7 +90,9 @@ class ViewWithVolumePlot(View):
 
     def add_plotter(self, *args, column_key: str = '-plot-', **kwargs) -> ViewWithVolumePlot:
         '''
-        TODO
+        add the plotter to the windo, hooks on a element with column_key key
+
+        returns self
         '''
 
         self.plotter = VolumePlotter(
@@ -94,7 +102,9 @@ class ViewWithVolumePlot(View):
 
     def remove_plotter(self) -> ViewWithVolumePlot:
         '''
-        TODO
+        removes the plotter from the windo
+
+        returns self
         '''
 
         if self.plotter is not None:
@@ -104,29 +114,17 @@ class ViewWithVolumePlot(View):
         return self
 
     def on_close(self) -> None:
-        '''
-        TODO
-        '''
-
         if self.plotter is not None:
             self.plotter.close()
         super().on_close()
 
     def enable(self) -> ViewWithVolumePlot:
-        '''
-        TODO
-        '''
-
         super().enable()
         if self.plotter is not None:
             self.plotter.enable()
         return self
 
     def disable(self) -> ViewWithVolumePlot:
-        '''
-        TODO
-        '''
-
         if self.plotter is not None:
             self.plotter.disable()
         super().disable()

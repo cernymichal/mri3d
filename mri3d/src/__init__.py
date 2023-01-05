@@ -1,5 +1,5 @@
 '''
-TODO
+module for holding other dependancies
 '''
 
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from .parsedicom import Patient, Series
 @dataclass
 class ApplicationState:
     '''
-    TODO
+    application state holder
     '''
 
     volume: Volume

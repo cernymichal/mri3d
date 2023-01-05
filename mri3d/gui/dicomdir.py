@@ -1,5 +1,5 @@
 '''
-TODO
+collection of views for loading a dicom image set
 '''
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from . import TITLE, ICON, View
 
 def get_dicomdir() -> Path | None:
     '''
-    TODO
+    query the user for file path with a PySimpleGUI popup
     '''
     dicomdir_path: Path = None
     first_input = True
@@ -35,7 +35,7 @@ def get_dicomdir() -> Path | None:
 
 class ChooseSeriesView(View):
     '''
-    TODO
+    view for choosing an image series from a DICOM dataset
     '''
 
     def __init__(self, ds: parsedicom.Dataset) -> None:
@@ -57,10 +57,6 @@ class ChooseSeriesView(View):
         super().__init__(TITLE, layout, size=(390, 200), icon=ICON)
 
     def handle_events(self, event: Any, _: dict) -> bool:
-        '''
-        TODO
-        '''
-
         if event in (sg.WIN_CLOSED, '-ok-', '-cancel-'):
             self.ok = event == '-ok-'
             return False
@@ -86,7 +82,7 @@ class ChooseSeriesView(View):
 
     def get_chosen_values(self) -> tuple[pydicom.dataset.Dataset | None, pydicom.dataset.Dataset | None, pydicom.dataset.Dataset | None]:
         '''
-        TODO
+        returns the values chosen from the dataset
         '''
 
         if not self.ok:
@@ -103,7 +99,7 @@ class ChooseSeriesView(View):
 
     def _get_options(self) -> tuple[list[str], list[str], list[str]]:
         '''
-        TODO
+        get the correct combo box content for the current chosen values
         '''
 
         patients = self.ds.ds.patient_records

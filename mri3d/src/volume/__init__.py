@@ -1,5 +1,5 @@
 '''
-TODO
+volume storage and operations with numpy
 '''
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import numpy as np
 
 class Volume:
     '''
-    TODO
+    holds volume in a numpy array
     '''
 
     def __init__(self, data: np.ndarray, spacing: tuple[float], value_range: tuple[float, float]):
@@ -18,7 +18,7 @@ class Volume:
 
     def rotate90(self, axis: int, k: int = 1) -> Volume:
         '''
-        TODO
+        rotate volume 90 degrees around axis k times, applies the right hand rule
         '''
 
         axes = ((1, 2), (2, 0), (0, 1))[axis]

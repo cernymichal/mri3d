@@ -1,5 +1,5 @@
 '''
-TODO
+dicom dataset navigator
 '''
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from .dicom_indices import *
 
 class Dataset:
     '''
-    TODO
+    holds the pydicom Dataset together with filesystem information
     '''
 
     def __init__(self, path: Path):
@@ -23,7 +23,7 @@ class Dataset:
 
     def has_any_series(self) -> bool:
         '''
-        TODO
+        returns if dataset contains any series
         '''
 
         for patient in self.ds.patient_records:
@@ -39,7 +39,7 @@ class Dataset:
 
 def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     '''
-    TODO
+    returns all studies from a patient's pydicom Dataset
     '''
 
     # TODO generators?
@@ -48,7 +48,7 @@ def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Datase
 
 def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     '''
-    TODO
+    returns all series from a study's pydicom Dataset
     '''
 
     return [child for child in study.children if child.DirectoryRecordType == "SERIES"]
@@ -56,7 +56,7 @@ def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
 
 def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     '''
-    TODO
+    returns all images from a series' pydicom Dataset
     '''
 
     return [child for child in series.children if child.DirectoryRecordType == "IMAGE"]
@@ -64,7 +64,7 @@ def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]
 
 def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     '''
-    TODO
+    returns a Volume composited from DICOM slice images
     '''
 
     paths = [image["ReferencedFileID"] for image in images]
@@ -92,7 +92,7 @@ def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
 @dataclass
 class Patient:
     '''
-    TODO
+    holds relevant parsed patient information
     '''
 
     name: str
@@ -102,7 +102,7 @@ class Patient:
     @classmethod
     def from_dicom(cls, patient: pydicom.dataset.Dataset) -> Patient:
         '''
-        TODO
+        returns a Patient parsed from a paydicom Dataset
         '''
 
         return cls(
@@ -115,7 +115,7 @@ class Patient:
 @dataclass
 class Series:
     '''
-    TODO
+    holds relevant parsed series information
     '''
 
     number: str
@@ -125,7 +125,7 @@ class Series:
     @classmethod
     def from_dicom(cls, study: pydicom.dataset.Dataset, series: pydicom.dataset.Dataset) -> Series:
         '''
-        TODO
+        returns a Series parsed from a paydicom Dataset
         '''
 
         return cls(
