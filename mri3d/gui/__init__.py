@@ -10,12 +10,13 @@ import PySimpleGUIQt as sg
 from .icon import ICON_HEAD
 
 
+# some constants
 TITLE = 'mri3d'
 ICON = ICON_HEAD
 
 DISABLED_BUTTON_COLORS = ('white', 'gray')
 
-
+# setting up the environment
 os.environ["QT_API"] = "pyside2"
 
 sg.ChangeLookAndFeel('DarkBrown')

@@ -3,12 +3,27 @@ dicom dataset navigator
 '''
 
 from __future__ import annotations
+from typing import Any
 from dataclasses import dataclass
 from pathlib import Path
 import numpy as np
 import pydicom
 from ..volume import Volume
 from .dicom_indices import *
+
+
+UNKNOWN_VALUE = 'UNKNOWN'
+
+
+def get_tag_value(dataset: pydicom.dataset.Dataset, tag: Any) -> Any:
+    '''
+    safely get value from dataset, returns UNKNOWN_VALUE if dataset doesnt contain tag
+    '''
+
+    if tag not in dataset:
+        return UNKNOWN_VALUE
+
+    return dataset[tag].value
 
 
 class Dataset:
@@ -103,9 +118,9 @@ class Patient:
         '''
 
         return cls(
-            name=patient[PATIENT_NAME_INDEX].value,
-            identification=patient[PATIENT_ID_INDEX].value,
-            sex=patient[PATIENT_SEX_INDEX].value
+            name=get_tag_value(patient, PATIENT_NAME_INDEX),
+            identification=get_tag_value(patient, PATIENT_ID_INDEX),
+            sex=get_tag_value(patient, PATIENT_SEX_INDEX)
         )
 
 
@@ -126,7 +141,7 @@ class Series:
         '''
 
         return cls(
-            number=series[SERIES_NUMBER_INDEX].value,
-            study=study[STUDY_ID_INDEX].value,
-            study_description=study[STUDY_DESCRIPTION_INDEX].value
+            number=get_tag_value(series, SERIES_NUMBER_INDEX),
+            study=get_tag_value(study, STUDY_ID_INDEX),
+            study_description=get_tag_value(study, STUDY_DESCRIPTION_INDEX)
         )

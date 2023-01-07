@@ -9,7 +9,7 @@ import PySimpleGUIQt as sg
 from src import ApplicationState
 from src.volume import Volume
 from .volume_plotter import ViewWithVolumePlot
-from . import TITLE, ICON, DISABLED_BUTTON_COLORS, popup_error
+from . import ICON, DISABLED_BUTTON_COLORS, popup_error
 
 
 class StateView(ViewWithVolumePlot):
@@ -178,7 +178,8 @@ class MainView(StateView):
         except OSError:
             popup_error('Please input a valid file path.')
         except:  # pylint: disable=bare-except
-            popup_error(f'Unknown error occured:\n{traceback.format_exc()}')
+            popup_error(
+                f'Unknown error while saving:\n{traceback.format_exc()}')
 
     def save_to_vox(self, filepath: str) -> None:
         '''
@@ -198,7 +199,8 @@ class MainView(StateView):
         except OverflowError:
             popup_error('.vox format only supports sizes up to 256.')
         except:  # pylint: disable=bare-except
-            popup_error(f'Unknown error occured:\n{traceback.format_exc()}')
+            popup_error(
+                f'Unknown error while saving:\n{traceback.format_exc()}')
 
     def enable(self) -> MainView:
         self.add_plotter(background_color=sg.theme_background_color())
@@ -217,6 +219,7 @@ class MeshView(StateView):
     '''
     view for creating a mesh from a Volume
     '''
+    # TODO
 
     def __init__(self, state: ApplicationState) -> None:
         self.state = state
@@ -225,7 +228,10 @@ class MeshView(StateView):
                   [sg.Stretch(), sg.Button('  Save OBJ  ', key='-save-')],
                   [sg.Text("Polygons: TODO", key='-polycount-'), sg.Stretch(), sg.Text(self.resolution_str(), key='-resolution-')]]
 
-        super().__init__(state, TITLE, layout, size=(1200, 800), icon=ICON)
+        self.title = self.title_str()
+        self.title_working = f'{self.title} (WORKING)'
+
+        super().__init__(state, self.title, layout, size=(1200, 800), icon=ICON)
 
         self.add_plotter(background_color=sg.theme_background_color())
         self.plotter.plot_volume(self.state.volume)

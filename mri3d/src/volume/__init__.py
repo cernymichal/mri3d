@@ -8,6 +8,10 @@ import numpy as np
 from numba import njit, prange
 
 
+VOX_PALLETE_ALPHA = [(255, 255, 255, i) for i in range(256)]
+VOX_PALLETE_GRAYSCALE = [(i, i, i, 255) for i in range(256)]
+
+
 @njit(fastmath=True)
 def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
     '''
@@ -195,11 +199,12 @@ class Volume:
                    resolution=self.spacing[1:3], resolutionunit=tf.RESUNIT.MILLIMETER, extratags=[
                        (2048, tf.DATATYPE.FLOAT, 3, self.spacing, True), (2049, tf.DATATYPE.FLOAT, 2, value_range_float, True)])
 
-    def save_to_vox(self, filepath: Path) -> None:
+    def save_to_vox(self, filepath: Path, with_alpha: bool = False) -> None:
         '''
         saves volume data to Magica Voxel .vox
 
         - all axes must be less than 256 in length
+        - alpha doesn't seem to be supported by MagicaVoxel yet, but the option is there
 
         requires py-vox-io to be installed
         '''
@@ -208,7 +213,7 @@ class Volume:
             raise OverflowError(
                 ".vox format only supports coordinates up to 256")
 
-        from pyvox.models import Vox, Color
+        from pyvox.models import Vox
         from pyvox.writer import VoxWriter
 
         # requires the data to be mapped to <0; 255>
@@ -216,7 +221,7 @@ class Volume:
             self.data, self.value_range, (0, 255)).round().astype(np.uint8)
 
         vox = Vox.from_dense(data_rounded)
-        vox.pallete = [Color(0, 0, 0, i) for i in range(256)]
+        vox.pallete = VOX_PALLETE_ALPHA if with_alpha else VOX_PALLETE_GRAYSCALE
         VoxWriter(filepath, vox).write()
 
     def normalized(self) -> bool:

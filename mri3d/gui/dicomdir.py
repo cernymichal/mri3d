@@ -9,6 +9,7 @@ import os
 import PySimpleGUIQt as sg
 import pydicom
 from src import parsedicom
+from src.parsedicom import get_tag_value
 from src.parsedicom.dicom_indices import PATIENT_NAME_INDEX, PATIENT_ID_INDEX, STUDY_ID_INDEX, STUDY_DESCRIPTION_INDEX, SERIES_NUMBER_INDEX
 from . import TITLE, ICON, View
 
@@ -107,12 +108,12 @@ class ChooseSeriesView(View):
         series = parsedicom.get_series(studies[self.indices[1]])
 
         patients_labels = [
-            f'{patient[PATIENT_NAME_INDEX].value} - {patient[PATIENT_ID_INDEX].value}' for patient in patients]
+            f'{get_tag_value(patient, PATIENT_NAME_INDEX)} - {get_tag_value(patient, PATIENT_ID_INDEX)}' for patient in patients]
 
         studies_labels = [
-            f'{study[STUDY_ID_INDEX].value} - {study[STUDY_DESCRIPTION_INDEX].value}' for study in studies]
+            f'{get_tag_value(study, STUDY_ID_INDEX)} - {get_tag_value(study, STUDY_DESCRIPTION_INDEX)}' for study in studies]
 
-        series_labels = [str(series[SERIES_NUMBER_INDEX].value)
+        series_labels = [str(get_tag_value(series, SERIES_NUMBER_INDEX))
                          for series in series]
 
         return (patients_labels, studies_labels, series_labels)
