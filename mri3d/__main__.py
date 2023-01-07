@@ -2,41 +2,52 @@
 an application for opening, reviewing, slightly adjusting and exporting dicom mri volumes to standard 3d formats
 '''
 
+from __future__ import annotations
+import traceback
+import pydicom.errors
+from gui import popup_error
 from gui.dicomdir import get_dicomdir, ChooseSeriesView
 from gui.exporter import MainView
 from src import ApplicationState, Patient, Series
 from src import parsedicom
 
 
-def get_state() -> ApplicationState:
+def get_state() -> ApplicationState | None:
     '''
-    query user for dicom series
+    query user for a DICOM series to load
     '''
 
-    dicomdir_path = get_dicomdir()
-    if dicomdir_path is None:
-        # TODO add popup
-        raise RuntimeError("Not a valid path")
+    while True:
+        dicomdir_path = get_dicomdir()
+        if dicomdir_path is None:  # user quit
+            return None
 
-    # TODO catch pydicom.errors.InvalidDicomError
-    dcm = parsedicom.Dataset(dicomdir_path)
-    if not dcm.has_any_series():
-        # TODO add popup
-        raise RuntimeError("No series found")
+        try:
+            dcm = parsedicom.Dataset(dicomdir_path)
+        except pydicom.errors.InvalidDicomError:
+            popup_error('Not a valid DICOMDIR file.')
+            continue
 
-    patient, study, series = ChooseSeriesView(dcm).run().get_chosen_values()
-    if series is None:
-        # TODO add popup
-        raise RuntimeError("Couldn't choose a series")
+        if not dcm.has_any_series():
+            popup_error('No series found in DICOMDIR.')
+            continue
 
-    images = parsedicom.get_images(series)
-    # TODO error check
-    volume = parsedicom.create_volume(images, dcm)
+        patient, study, series = ChooseSeriesView(
+            dcm).run().get_chosen_values()
+        if series is None:  # user quit
+            return None
 
-    return ApplicationState(
-        volume=volume,
-        patient=Patient.from_dicom(patient),
-        series=Series.from_dicom(study, series))
+        try:
+            images = parsedicom.get_images(series)
+            volume = parsedicom.create_volume(images, dcm)
+        except:  # pylint: disable=bare-except
+            popup_error(
+                f'Unknown error while loading volume:\n{traceback.format_exc()}')
+
+        return ApplicationState(
+            volume=volume,
+            patient=Patient.from_dicom(patient),
+            series=Series.from_dicom(study, series))
 
 
 def main():
@@ -44,12 +55,14 @@ def main():
     app entrypoint
     '''
 
-    try:
-        state = get_state()
-    except RuntimeError:
+    state = get_state()
+    if state is None:  # user quit
         return
 
     MainView(state).run()
 
 
-main()
+try:
+    main()
+except:  # pylint: disable=bare-except
+    popup_error(f'Unknown error occured:\n{traceback.format_exc()}')

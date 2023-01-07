@@ -78,7 +78,7 @@ def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
     slices.sort(key=lambda s: float(s.SliceLocation), reverse=True)
 
     if slices[0][IMAGE_SAMPLES_PER_PIXEL_INDEX].value != 1:
-        raise Exception("color data not supported")  # TODO
+        raise RuntimeError("Color data not supported")  # TODO
 
     pixel_data = np.array([slice.pixel_array for slice in slices])
     spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)

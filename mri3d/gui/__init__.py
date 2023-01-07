@@ -13,11 +13,13 @@ from .icon import ICON_HEAD
 TITLE = 'mri3d'
 ICON = ICON_HEAD
 
+DISABLED_BUTTON_COLORS = ('white', 'gray')
+
+
 os.environ["QT_API"] = "pyside2"
 
 sg.ChangeLookAndFeel('DarkBrown')
 sg.SetOptions(icon=ICON)
-
 
 # This bit gets the taskbar icon working properly in Windows
 # https://github.com/PySimpleGUI/PySimpleGUI/issues/2722#issuecomment-852923088
@@ -97,3 +99,11 @@ class View:
         '''
 
         self.window.QT_QMainWindow.setWindowTitle(title)
+
+
+def popup_error(message: str) -> None:
+    '''
+    popup an error message
+    '''
+
+    sg.PopupError(message)

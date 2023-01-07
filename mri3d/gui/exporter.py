@@ -4,11 +4,12 @@ views for editing and exporting a Volume
 
 from __future__ import annotations
 from typing import Any
+import traceback
 import PySimpleGUIQt as sg
 from src import ApplicationState
 from src.volume import Volume
 from .volume_plotter import ViewWithVolumePlot
-from . import TITLE, ICON
+from . import TITLE, ICON, DISABLED_BUTTON_COLORS, popup_error
 
 
 class StateView(ViewWithVolumePlot):
@@ -73,15 +74,15 @@ class MainView(StateView):
         layout = [[sg.Column([[sg.Button('  Rotate X  ', key='-rx-')],
                               [sg.Button('  Rotate Y  ', key='-ry-')],
                               [sg.Button('  Rotate Z  ', key='-rz-')],
-                              [sg.Button('  Scale 2x  ', key='-su-')],
-                              [sg.Button('  Scale .5x  ', key='-sd-')],
+                              [sg.Button('  Upsample 2x  ', key='-su-')],
+                              [sg.Button('  Downsample 2x  ', key='-sd-')],
                               [sg.Button('  Normalize  ', key='-normalize-')]]), sg.Column([[]], key='-plot-')],
                   [sg.Stretch(),
                    sg.SaveAs('  Save TIFF  ', key='-save-tiff-', target='-tiff-path-',
                              file_types=(("TIFF Files", "*.tiff"), ("ALL Files", "*"))),
                    sg.SaveAs('  Save VOX  ', key='-save-vox-', target='-vox-path-',
                              file_types=(("VOX Files", "*.vox"), ("ALL Files", "*"))),
-                   sg.Button('  Create mesh  ', key='-mesh-', disabled='True', button_color=('white', 'gray'))],
+                   sg.Button('  Create mesh  ', key='-mesh-', disabled='True', button_color=DISABLED_BUTTON_COLORS)],
                   [sg.Text(self.patient_str()),
                    sg.Text(self.series_str()),
                    sg.Text(self.normalized_str(), key='-normalized-',
@@ -105,35 +106,15 @@ class MainView(StateView):
 
         if event[0:2] == '-r' and len(event) == 4:
             axis = 0 if event[2] == 'x' else 1 if event[2] == 'y' else 2
-            self.state.volume = Volume.rotate90(self.state.volume, axis)
-            self.plotter.plot_volume(self.state.volume)
-            self.window['-resolution-'].Update(self.resolution_str())
-
+            self.rotate(axis)
         elif event[0:2] == '-s' and len(event) == 4:
-            if event[2] == 'd':
-                self.state.volume = Volume.halfsample(self.state.volume)
-            else:
-                self.state.volume = Volume.resample(self.state.volume, 2)
-            self.window['-resolution-'].Update(self.resolution_str())
-            self.plotter.plot_volume(self.state.volume)
-
+            self.resample(event[2])
         elif event == '-normalize-':
-            # TODO already normalized
-            self.state.volume = Volume.normalize_spacing(self.state.volume)
-            self.window['-resolution-'].Update(self.resolution_str())
-            self.window['-normalized-'].Update(self.normalized_str())
-            self.plotter.plot_volume(self.state.volume)
-
-        elif event == '-tiff-path-':
-            # TODO fs error
-            self.state.volume.save_to_tiff(values['-tiff-path-'])
-
-        elif event == '-vox-path-':
-            # TODO not normalized
-            # TODO dim error
-            # TODO fs error
-            self.state.volume.save_to_vox(values['-vox-path-'])
-
+            self.normalize()
+        elif event == '-tiff-path-' and values['-tiff-path-']:
+            self.save_to_tiff(values['-tiff-path-'])
+        elif event == '-vox-path-' and values['-vox-path-']:
+            self.save_to_vox(values['-vox-path-'])
         elif event == '-mesh-':
             self.disable()
             MeshView(self.state).run()
@@ -143,6 +124,81 @@ class MainView(StateView):
             self.set_title(self.title)
 
         return True
+
+    def rotate(self, axis: int) -> None:
+        '''
+        rotate volume in state on axis by 90 degrees
+        '''
+
+        self.state.volume = Volume.rotate90(self.state.volume, axis)
+        self.plotter.plot_volume(self.state.volume)
+        self.window['-resolution-'].Update(self.resolution_str())
+
+    def resample(self, direction: str) -> None:
+        '''
+        resample volume in state:
+
+        - direction = 'u' - upsample 2x
+        - direction = 'd' - downsample 2x
+        '''
+
+        if direction not in ('u', 'd'):
+            raise RuntimeError("unknown direction")
+
+        if direction == 'd':
+            self.state.volume = Volume.halfsample(self.state.volume)
+        else:
+            self.state.volume = Volume.resample(self.state.volume, 2)
+        self.window['-resolution-'].Update(self.resolution_str())
+        self.plotter.plot_volume(self.state.volume)
+
+    def normalize(self) -> None:
+        '''
+        normalize volume in state
+        '''
+
+        if self.state.volume.normalized():
+            popup_result = sg.PopupYesNo(
+                'The volume already seems normalized.\nDo you want to continue?')
+            if popup_result != 'Yes':
+                return
+
+        self.state.volume = Volume.normalize_spacing(self.state.volume)
+        self.window['-resolution-'].Update(self.resolution_str())
+        self.window['-normalized-'].Update(self.normalized_str())
+        self.plotter.plot_volume(self.state.volume)
+
+    def save_to_tiff(self, filepath: str) -> None:
+        '''
+        save volume in state to .tiff
+        '''
+
+        try:
+            self.state.volume.save_to_tiff(filepath)
+        except OSError:
+            popup_error('Please input a valid file path.')
+        except:  # pylint: disable=bare-except
+            popup_error(f'Unknown error occured:\n{traceback.format_exc()}')
+
+    def save_to_vox(self, filepath: str) -> None:
+        '''
+        save volume in state to .vox
+        '''
+
+        if not self.state.volume.normalized():
+            popup_result = sg.PopupYesNo(
+                'The volume is not uniform along all axis, consider normalizing it first.\nDo you want to continue?')
+            if popup_result != 'Yes':
+                return
+
+        try:
+            self.state.volume.save_to_vox(filepath)
+        except OSError:
+            popup_error('Please input a valid file path.')
+        except OverflowError:
+            popup_error('.vox format only supports sizes up to 256.')
+        except:  # pylint: disable=bare-except
+            popup_error(f'Unknown error occured:\n{traceback.format_exc()}')
 
     def enable(self) -> MainView:
         self.add_plotter(background_color=sg.theme_background_color())
