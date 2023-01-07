@@ -5,7 +5,16 @@ volume storage and operations with numpy
 from __future__ import annotations
 from pathlib import Path
 import numpy as np
-from numba import njit
+from numba import njit, prange
+
+
+@njit(fastmath=True)
+def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
+    '''
+    TODO
+    '''
+
+    return x < shape[0] and y < shape[1] and z < shape[2]
 
 
 @njit(fastmath=True)
@@ -20,21 +29,51 @@ def trilinear_interpolation(volume: np.ndarray, sample: np.ndarray) -> float:
     tr = bl + np.array([1, 1, 1])
     xd, yd, zd = sample % 1
 
-    c00 = volume[bl[0], bl[1], bl[2]] * \
-        (1 - xd) + volume[tr[0], bl[1], bl[2]] * xd
-    c01 = volume[bl[0], bl[1], tr[2]] * \
-        (1 - xd) + volume[tr[0], bl[1], tr[2]] * xd
-    c10 = volume[bl[0], tr[1], bl[2]] * \
-        (1 - xd) + volume[tr[0], tr[1], bl[2]] * xd
-    c11 = volume[bl[0], tr[1], tr[2]] * \
-        (1 - xd) + volume[tr[0], tr[1], tr[2]] * xd
+    # zeroes if sample points are out of bounds
+    c000 = volume[bl[0], bl[1], bl[2]] if in_bounds(
+        bl[0], bl[1], bl[2], volume.shape) else 0
+    c001 = volume[bl[0], bl[1], tr[2]] if in_bounds(
+        bl[0], bl[1], tr[2], volume.shape) else 0
+    c010 = volume[bl[0], tr[1], bl[2]] if in_bounds(
+        bl[0], tr[1], bl[2], volume.shape) else 0
+    c011 = volume[bl[0], tr[1], tr[2]] if in_bounds(
+        bl[0], tr[1], tr[2], volume.shape) else 0
+    c100 = volume[tr[0], bl[1], bl[2]] if in_bounds(
+        tr[0], bl[1], bl[2], volume.shape) else 0
+    c101 = volume[tr[0], bl[1], tr[2]] if in_bounds(
+        tr[0], bl[1], tr[2], volume.shape) else 0
+    c110 = volume[tr[0], tr[1], bl[2]] if in_bounds(
+        tr[0], tr[1], bl[2], volume.shape) else 0
+    c111 = volume[tr[0], tr[1], tr[2]] if in_bounds(
+        tr[0], tr[1], tr[2], volume.shape) else 0
 
+    # interpolate along x
+    c00 = c000 * (1 - xd) + c100 * xd
+    c01 = c001 * (1 - xd) + c101 * xd
+    c10 = c010 * (1 - xd) + c110 * xd
+    c11 = c011 * (1 - xd) + c111 * xd
+
+    # interpolate along y
     c0 = c00 * (1 - yd) + c10 * yd
     c1 = c01 * (1 - yd) + c11 * yd
 
+    # interpolate along z
     c = c0 * (1 - zd) + c1 * zd
 
     return c
+
+
+@njit(parallel=True)
+def interpolate_volume_data_parallel(volume: np.ndarray, target: np.ndarray, factor: np.ndarray) -> None:
+    '''
+    TODO
+    '''
+
+    for x in prange(0, target.shape[0]):
+        for y in range(0, target.shape[1]):
+            for z in range(0, target.shape[2]):
+                target[x, y, z] = trilinear_interpolation(
+                    volume, np.array((x, y, z)) / factor)
 
 
 def interpolate_volume_data(volume: np.ndarray, factor: np.ndarray):
@@ -45,16 +84,13 @@ def interpolate_volume_data(volume: np.ndarray, factor: np.ndarray):
     interpolated_data = np.empty(np.ceil(
         np.array(volume.data.shape) * factor).astype(np.uint), dtype=volume.dtype)
 
-    # TODO pad with zeroes
+    # padded_volume_shape = (
+    #     volume.shape[0] + 1, volume.shape[1] + 1, volume.shape[2] + 1)
+    # padded_volume = np.zeros(padded_volume_shape, dtype=volume.dtype)
+    # padded_volume[0:volume.shape[0],
+    #               0:volume.shape[1], 0:volume.shape[2]] = volume
 
-    for x in range(0, interpolated_data.shape[0]):
-        for y in range(0, interpolated_data.shape[1]):
-            for z in range(0, interpolated_data.shape[2]):
-                # TODO this shouldnt work
-                # if (np.array((x, y, z)) == np.array(interpolated_data.shape) - (1, 1, 1)).any():
-                #     continue
-                interpolated_data[x, y, z] = trilinear_interpolation(
-                    volume, np.array((x, y, z)) / factor)
+    interpolate_volume_data_parallel(volume, interpolated_data, factor)
 
     return interpolated_data
 
