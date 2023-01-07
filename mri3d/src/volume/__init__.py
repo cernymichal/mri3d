@@ -100,14 +100,21 @@ class Volume:
     holds volume in a numpy array
 
     - spacing is in mm
+    - value_range is only really useful for intergral data types
     '''
 
     def __init__(self, data: np.ndarray, spacing: tuple[float], bits_per_sample: int):
         self.data = data
         self.spacing = spacing
         self.bits_per_sample = bits_per_sample
-        # TODO uint assumed
-        self.value_range = (0, 2 ** self.bits_per_sample - 1)
+
+        if np.issubdtype(self.data.dtype, np.unsignedinteger):
+            self.value_range = (0, 2 ** self.bits_per_sample - 1)
+        elif np.issubdtype(self.data.dtype, np.signedinteger):
+            self.value_range = (-2 ** (self.bits_per_sample - 1),
+                                2 ** (self.bits_per_sample - 1) - 1)
+        else:
+            self.value_range = (float('-inf'), float('inf'))
 
     @staticmethod
     def rotate90(volume: Volume, axis: int, k: int = 1) -> Volume:
@@ -180,9 +187,13 @@ class Volume:
         requires tifffile to be installed
         '''
 
+        value_range_float = (
+            float(self.value_range[0]), float(self.value_range[1]))
+
         import tifffile as tf
-        tf.imwrite(filepath, data=self.data, compression=tf.COMPRESSION.NONE,  # bitspersample=self.bits_per_sample,  packints_encode is not implemented
-                   resolution=self.spacing[1:3], resolutionunit=tf.RESUNIT.MILLIMETER, extratags=[(2048, tf.DATATYPE.FLOAT, 3, self.spacing, True), (2049, tf.DATATYPE.FLOAT, 2, self.value_range, True)])
+        tf.imwrite(filepath, data=self.data, compression=tf.COMPRESSION.NONE,  # bitspersample=self.bits_per_sample, packints_encode is not implemented
+                   resolution=self.spacing[1:3], resolutionunit=tf.RESUNIT.MILLIMETER, extratags=[
+                       (2048, tf.DATATYPE.FLOAT, 3, self.spacing, True), (2049, tf.DATATYPE.FLOAT, 2, value_range_float, True)])
 
     def save_to_vox(self, filepath: Path) -> None:
         '''
