@@ -10,5 +10,6 @@ ignored-modules=PySimpleGUIQt, PySide2.QtWidgets
 # R0913 Too many arguments (6/5) (too-many-arguments)
 # R0914 Too many local variables (18/15) (too-many-locals)
 # W0511 (fixme)
+# C0415 Import outside toplevel (import-outside-toplevel)
 [MESSAGES CONTROL]
-disable=C0301, C0103, R0913, R0914, W0511
+disable=C0301, C0103, R0913, R0914, W0511, C0415

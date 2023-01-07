@@ -57,13 +57,13 @@ class ChooseSeriesView(View):
         super().__init__(TITLE, layout, size=(390, 200), icon=ICON)
 
     def handle_events(self, event: Any, _: dict) -> bool:
-        if event in (sg.WIN_CLOSED, '-ok-', '-cancel-'):
-            self.ok = event == '-ok-'
-            return False
-
         self.indices = (self.window['-patient-'].Widget.currentIndex(),
                         self.window['-study-'].Widget.currentIndex(),
                         self.window['-series-'].Widget.currentIndex())
+
+        if event in (sg.WIN_CLOSED, '-ok-', '-cancel-'):
+            self.ok = event == '-ok-'
+            return False
 
         if event == "-patient-":
             self.indices = (self.indices[0], 0, 0)

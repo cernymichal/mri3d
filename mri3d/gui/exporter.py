@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Any
 import PySimpleGUIQt as sg
 from src import ApplicationState
+from src.volume import Volume
 from .volume_plotter import ViewWithVolumePlot
 from . import TITLE, ICON
 
@@ -69,7 +70,7 @@ class MainView(StateView):
 
         if event[0:2] == '-r' and len(event) == 4:
             axis = 0 if event[2] == 'x' else 1 if event[2] == 'y' else 2
-            self.state.volume.rotate90(axis)
+            self.state.volume = Volume.rotate90(self.state.volume, axis)
             self.plotter.plot_volume(self.state.volume)
             self.window['-resolution-'].Update(self.resolution_str())
 
@@ -109,30 +110,36 @@ class ExportView(StateView):
 
         layout = [[sg.Column([[sg.Button('  Scale 2x  ', key='-su-')],
                               [sg.Button('  Scale .5x  ', key='-sd-')]]), sg.Column([[]], key='-plot-')],
-                  [sg.Stretch(), sg.Button('  Save TIFF  ', key='-save-tiff-'),
-                   sg.Button('  Save VOX  ', key='-save-vox-')],
-                  [sg.Stretch(), sg.Text(self.resolution_str(), key='-resolution-')]]
+                  [sg.Stretch(), sg.SaveAs('  Save TIFF  ', key='-save-tiff-', target='-tiff-path-', file_types=(("TIFF Files", "*.tiff"), ("ALL Files", "*"))),
+                   sg.SaveAs('  Save VOX  ', key='-save-vox-', target='-vox-path-', file_types=(("VOX Files", "*.vox"), ("ALL Files", "*")))],
+                  [sg.Stretch(), sg.Text(self.resolution_str(), key='-resolution-')],
+                  [sg.Input(key='-tiff-path-', enable_events=True, visible=False), sg.Input(key='-vox-path-', enable_events=True, visible=False)]]
 
         super().__init__(state, TITLE, layout, size=(1200, 800), icon=ICON)
 
         self.add_plotter(background_color=sg.theme_background_color())
         self.plotter.plot_volume(self.state.volume)
 
-    def handle_events(self, event: Any, _: dict) -> bool:
+    def handle_events(self, event: Any, values: dict) -> bool:
         if event == sg.WIN_CLOSED:
             return False
 
         if event[0:2] == '-s' and len(event) == 4:
-            # TODO interpolate volume
+            if event[2] == 'd':
+                self.state.volume = Volume.halfsample(self.state.volume)
+            else:
+                self.state.volume = Volume.resample(self.state.volume, 2)
             self.window['-resolution-'].Update(self.resolution_str())
+            self.plotter.plot_volume(self.state.volume)
 
-        elif event == '-save-tiff-':
-            # TODO save to tiff
-            pass
+        elif event == '-tiff-path-':
+            # TODO fs error
+            self.state.volume.save_to_tiff(values['-tiff-path-'])
 
-        elif event == '-save-vox-':
-            # TODO save to vox
-            pass
+        elif event == '-vox-path-':
+            # TODO dim error
+            # TODO fs error
+            self.state.volume.save_to_vox(values['-vox-path-'])
 
         return True
 

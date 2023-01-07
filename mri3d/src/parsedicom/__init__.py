@@ -83,10 +83,8 @@ def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
 
     pixel_data = np.array([slice.pixel_array for slice in slices])
     spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)
-    # TODO uint assumed
-    value_range = (0, 2 ** slices[0][IMAGE_BITS_STORED_INDEX].value - 1)
 
-    return Volume(pixel_data, spacing, value_range)
+    return Volume(pixel_data, spacing, slices[0][IMAGE_BITS_STORED_INDEX].value)
 
 
 @dataclass
