@@ -11,7 +11,7 @@ from numba import njit, prange
 @njit(fastmath=True)
 def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
     '''
-    TODO
+    check if index (x, y, z) is contained in an array
     '''
 
     return x < shape[0] and y < shape[1] and z < shape[2]
@@ -20,7 +20,10 @@ def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
 @njit(fastmath=True)
 def trilinear_interpolation(volume: np.ndarray, sample: np.ndarray) -> float:
     '''
-    TODO
+    get interpolated value at sample index from volume data
+
+    - borders of the volume behave as if padded by zeroes
+    - uniform point distribution in volume assumed
 
     https://en.wikipedia.org/wiki/Trilinear_interpolation
     '''
@@ -66,29 +69,26 @@ def trilinear_interpolation(volume: np.ndarray, sample: np.ndarray) -> float:
 @njit(parallel=True)
 def interpolate_volume_data_parallel(volume: np.ndarray, target: np.ndarray, factor: np.ndarray) -> None:
     '''
-    TODO
+    interpolates the whole volume into target with factor in parallel for the x axis
     '''
 
-    for x in prange(0, target.shape[0]):
-        for y in range(0, target.shape[1]):
-            for z in range(0, target.shape[2]):
+    for x in prange(target.shape[0]):  # pylint: disable=not-an-iterable
+        for y in range(target.shape[1]):
+            for z in range(target.shape[2]):
                 target[x, y, z] = trilinear_interpolation(
                     volume, np.array((x, y, z)) / factor)
 
 
-def interpolate_volume_data(volume: np.ndarray, factor: np.ndarray):
+def interpolate_volume_data(volume: np.ndarray, factor: np.ndarray) -> np.ndarray:
     '''
-    TODO
+    interpolates the whole volume with factor
+
+    - wraps interpolate_volume_data_parallel for convenience
     '''
 
-    interpolated_data = np.empty(np.ceil(
-        np.array(volume.data.shape) * factor).astype(np.uint), dtype=volume.dtype)
-
-    # padded_volume_shape = (
-    #     volume.shape[0] + 1, volume.shape[1] + 1, volume.shape[2] + 1)
-    # padded_volume = np.zeros(padded_volume_shape, dtype=volume.dtype)
-    # padded_volume[0:volume.shape[0],
-    #               0:volume.shape[1], 0:volume.shape[2]] = volume
+    resulting_shape = np.ceil(
+        np.array(volume.data.shape) * factor).astype(np.uint)
+    interpolated_data = np.empty(resulting_shape, dtype=volume.dtype)
 
     interpolate_volume_data_parallel(volume, interpolated_data, factor)
 
@@ -99,7 +99,7 @@ class Volume:
     '''
     holds volume in a numpy array
 
-    spacing is in mm
+    - spacing is in mm
     '''
 
     def __init__(self, data: np.ndarray, spacing: tuple[float], bits_per_sample: int):
@@ -113,6 +113,8 @@ class Volume:
     def rotate90(volume: Volume, axis: int, k: int = 1) -> Volume:
         '''
         rotate volume 90 degrees around axis k times, applies the right hand rule
+
+        returns the generated Volume
         '''
 
         axes = ((1, 2), (2, 0), (0, 1))[axis]
@@ -128,7 +130,9 @@ class Volume:
     @staticmethod
     def halfsample(volume: Volume) -> Volume:
         '''
-        TODO
+        downsample the volume data by 2
+
+        returns the generated Volume
         '''
 
         return Volume(volume.data[::2, ::2, ::2], volume.spacing, volume.bits_per_sample)
@@ -136,7 +140,9 @@ class Volume:
     @staticmethod
     def resample(volume: Volume, factor: float) -> Volume:
         '''
-        TODO
+        resample the volume data by factor
+
+        returns the generated Volume
         '''
 
         return Volume(interpolate_volume_data(volume.data, np.ones(3) * factor), volume.spacing, volume.bits_per_sample)
@@ -144,7 +150,11 @@ class Volume:
     @staticmethod
     def normalize_spacing(volume: Volume) -> Volume:
         '''
-        TODO
+        resample the volume data along one axis so that uniform spacing is achieved
+
+        - multiple passes will be needed if volume is not uniform along any plane
+
+        returns the generated Volume
         '''
 
         min_spacing = min(volume.spacing)
@@ -172,7 +182,7 @@ class Volume:
 
         import tifffile as tf
         tf.imwrite(filepath, data=self.data, compression=tf.COMPRESSION.NONE,  # bitspersample=self.bits_per_sample,  packints_encode is not implemented
-                   resolution=self.spacing[0:2], resolutionunit=tf.RESUNIT.MILLIMETER, extratags=[(2048, tf.DATATYPE.FLOAT, 3, self.spacing, True), (2049, tf.DATATYPE.FLOAT, 2, self.value_range, True)])
+                   resolution=self.spacing[1:3], resolutionunit=tf.RESUNIT.MILLIMETER, extratags=[(2048, tf.DATATYPE.FLOAT, 3, self.spacing, True), (2049, tf.DATATYPE.FLOAT, 2, self.value_range, True)])
 
     def save_to_vox(self, filepath: Path) -> None:
         '''
@@ -198,5 +208,12 @@ class Volume:
         vox.pallete = [Color(0, 0, 0, i) for i in range(256)]
         VoxWriter(filepath, vox).write()
 
-    def __str__(self):
+    def normalized(self) -> bool:
+        '''
+        checks if the volume's spacing is uniform
+        '''
+
+        return self.spacing[0] == self.spacing[1] and self.spacing[1] == self.spacing[2]
+
+    def __str__(self) -> str:
         return f'Volume{self.data.shape} with spacing {self.spacing}'

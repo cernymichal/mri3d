@@ -5,13 +5,28 @@ mri3d gui components module
 from __future__ import annotations
 from typing import Any
 import os
+import sys
 import PySimpleGUIQt as sg
+from .icon import ICON_HEAD
+
 
 TITLE = 'mri3d'
-ICON = sg.DEFAULT_WINDOW_ICON
+ICON = ICON_HEAD
 
 os.environ["QT_API"] = "pyside2"
+
 sg.ChangeLookAndFeel('DarkBrown')
+sg.SetOptions(icon=ICON)
+
+
+# This bit gets the taskbar icon working properly in Windows
+# https://github.com/PySimpleGUI/PySimpleGUI/issues/2722#issuecomment-852923088
+if sys.platform.startswith('win'):
+    import ctypes
+    # Make sure Pyinstaller icons are still grouped
+    if not sys.argv[0].endswith('.exe'):
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            'CompanyName.ProductName.SubProduct.VersionInformation')
 
 
 class View:
@@ -75,3 +90,10 @@ class View:
 
         self.window.Disable()
         return self
+
+    def set_title(self, title: str = TITLE) -> View:
+        '''
+        sets the window title
+        '''
+
+        self.window.QT_QMainWindow.setWindowTitle(title)

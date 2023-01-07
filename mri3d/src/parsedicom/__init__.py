@@ -42,7 +42,6 @@ def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Datase
     returns all studies from a patient's pydicom Dataset
     '''
 
-    # TODO generators?
     return [child for child in patient.children if child.DirectoryRecordType == "STUDY"]
 
 
