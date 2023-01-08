@@ -20,3 +20,10 @@ import pytest
 #    Test test_func
 #    """
 #    assert expected == parsedicom.test_func(x)
+
+# TODO get_tag_value, sex is missing
+# TODO has_any_series
+# TODO create_volume
+
+# TODO Patient.from_dicom
+# TODO Series.from_dicom
