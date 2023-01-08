@@ -10,7 +10,7 @@ The loaded volume can also be munipulated with:
 - Rotation around axis by 90 degrees
 - Upsampling twice
 - Downsampling twice
-- Resampling along one axis to normalize physical texel size
+- Resampling along one axis to normalize physical voxel size
 
 Interpolation is done trilinearly
 

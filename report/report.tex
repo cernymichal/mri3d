@@ -18,22 +18,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Úvod}
 \label{sec:uvod}
-Tato zpráva pojednává o semestrální práci BI-PYT.21 ze zimního semestru 2022/23 zaměřené na zpracování dat z magnetické rezonance pro další zobrazení ve 3D. Klinické snímky jsou standartně uchovávány ve formátu DICOM, který obsahuje množinu sérií obrázků. Aplikace takovou sbírku načte, uživatel si požadovanou sérii vybere (obr. \ref{fig:series}), zobrazí a jsou mu nabídnuty možnosti jejích úprav a exportu. Výstup aplikace je cílen na další použití ve 3D - Unity, Blender atd..
+Tato zpráva pojednává o semestrální práci BI-PYT.21 ze zimního semestru 2022/23 zaměřené na zpracování dat z magnetické rezonance pro další zobrazení ve 3D. Klinické snímky jsou standardně uchovávány ve formátu DICOM, který obsahuje množinu sérií obrázků. Aplikace takovou sbírku načte, uživatel si požadovanou sérii vybere (obr. \ref{fig:series}), zobrazí a jsou mu nabídnuty možnosti jejích úprav a exportu. Výstup aplikace je cílen na další použití ve 3D - Unity, Blender atd..
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Existující řešení}
 \label{sec:exitujici_reseni}
-Běžné klinické aplikace jako \href{https://www.osirix-viewer.com/}{OsiriX}, \href{https://www.radiantviewer.com/}{RadiAnt}, nebo i \href{https://www.slicer.org/}{3DSlicer} jsou zaměřeny spíše na analýzu a vizualizaci. Převod objemových dat DICOM na standartní bitmapy, voxelovou\footnote{Voxel je obdoba pixelu ve 3D} reprezentaci nebo meshe existuje pouze v podobě specializovaných CLI programů\footnote{např. \href{https://github.com/AOT-AG/DicomToMesh}{DicomToMesh} a \href{https://github.com/dvolgyes/dcm2hdr}{dcm2hdr}}. Tento projekt si klade za cíl metody zpracování sjednotit do uživatelsky přívětivé GUI aplikace.
+Běžné klinické aplikace jako \href{https://www.osirix-viewer.com/}{OsiriX}, \href{https://www.radiantviewer.com/}{RadiAnt}, nebo i \href{https://www.slicer.org/}{3DSlicer} jsou zaměřeny spíše na analýzu a vizualizaci. Převod objemových dat DICOM na standardní bitmapy, voxelovou\footnote{Voxel je obdoba pixelu ve 3D} reprezentaci nebo meshe existuje pouze v podobě specializovaných CLI programů\footnote{např. \href{https://github.com/AOT-AG/DicomToMesh}{DicomToMesh} a \href{https://github.com/dvolgyes/dcm2hdr}{dcm2hdr}}. Tento projekt si klade za cíl metody zpracování sjednotit do uživatelsky přívětivé GUI aplikace.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{DICOM}
 \label{sec:dicom}
-První výzvou bylo vůbec samotné čtení vstupních dat. Pro Python existuje vše zahrnující knihovna pydicom\cite{bib:pydicom}, která slouží právě k tomuto účelu. Standart DICOM\cite{bib:dicom-structures}\cite{bib:dicom-dictionary} není ale všemi výrobci snímkovacích přístrojů stoprocentně dodržován a např. můj sken bylo nutné nejdříve opravit pomocí nástrojů DCMTK na manipulaci DICOM dat. Implementace se omezuje pouze na standardizované sety se souborem DICOMDIR.\footnote{Postup pro případnou opravu dat je popsán v README}
+První výzvou bylo vůbec samotné čtení vstupních dat. Pro Python existuje vše zahrnující knihovna pydicom\cite{bib:pydicom}, která slouží právě k tomuto účelu. Standard DICOM\cite{bib:dicom-structures}\cite{bib:dicom-dictionary} není ale všemi výrobci snímkovacích přístrojů stoprocentně dodržován a např. můj sken bylo nutné nejdříve opravit pomocí nástrojů DCMTK na manipulaci DICOM dat. Implementace se omezuje pouze na standardizované sety se souborem DICOMDIR.\footnote{Postup pro případnou opravu dat je popsán v README}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Vizualizace}
 \label{sec:vizualizace}
-Prostorová data jsou načtena ze seřazené sekvence obrázků série, implementována je podpora pouze pro jeden kanál (monochromatiká data), tato podoba je i nejpoužívanější. pydicom by měl spolu s knihovnou GDCM umět přečíst \emph{většinu} používaných formátů snímků\cite{bib:pydicom-formats}, ale v praxi jsem se setkal i s nepodmorovanými. Pro vizualizaci objemu jsem z mnoha\footnote{např. Matplotlib - volumetrická data lze ale většinou pouze vyrendrovat do obrázku} nakonec zvolil balíček PyVista\cite{bib:pyvista-volumes} založený na \href{https://vtk.org/}{VTK}, snímek je možné si pak v reálném čase prohlížet i se správným rozměrem voxelů.
+Prostorová data jsou načtena ze seřazené sekvence obrázků série, implementována je podpora pouze pro jeden kanál (monochromatická data), tato podoba je i nejpoužívanější. pydicom by měl spolu s knihovnou GDCM umět přečíst \emph{většinu} používaných formátů snímků\cite{bib:pydicom-formats}, ale v praxi jsem se setkal i s nepodporovanými. Pro vizualizaci objemu jsem z mnoha\footnote{např. Matplotlib - volumetrická data lze ale většinou pouze vyrendrovat do obrázku} nakonec zvolil balíček PyVista\cite{bib:pyvista-volumes} založený na \href{https://vtk.org/}{VTK}, snímek je možné si pak v reálném čase prohlížet i se správným rozměrem voxelů.
 
 \begin{figure}[h]
   \centering\leavevmode
@@ -73,7 +73,7 @@ Body snímané zařízením nebývají rozmístěny v prostoru rovnoměrně - ř
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Výstup}
 \label{sec:vystup}
-Implementován je export zpracovaného volumetrického modelu do vrstveného souboru TIFF\footnote{TIFF nebývá prohlížeči podporovaný pro všechny využití, osobně se mi osvědčil online nástroj \href{https://ij.imjoy.io/}{ImageJ}} a formátu \href{https://ephtracy.github.io/}{MagicaVoxel} VOX\cite{bib:magicavoxel-vox}. První z nich je ideální pro další použití dat jako objemu hustot v 3D softwaru (umístění do scény v Blendru, Unity\footnote{Moje navazující práce v rámci BI-MVT.21 se zabývá interakcí s těmito daty ve VR} atp.). Mainstreamová adopce voxelové grafiky je stále ještě trochu v budoucnosti, s uloženým modelem je možné ale pracovat jako s jakýmkoliv jiným.
+Implementován je export zpracovaného volumetrického modelu do vrstveného souboru TIFF\footnote{TIFF nebývá prohlížeči podporovaný pro všechny využití, osobně se mi osvědčil online nástroj \href{https://ij.imjoy.io/}{ImageJ}} a formátu \href{https://ephtracy.github.io/}{MagicaVoxel} VOX\cite{bib:magicavoxel-vox}. První z nich je ideální pro další použití dat jako objemu hustot v 3D softwaru (umístění do scény v Blenderu, Unity\footnote{Moje navazující práce v rámci BI-MVT.21 se zabývá interakcí s těmito daty ve VR} atp.). Mainstreamová adopce voxelové grafiky je stále ještě trochu v budoucnosti, s uloženým modelem je možné ale pracovat jako s jakýmkoliv jiným.
 
 \begin{figure}[h]
   \centering\leavevmode
@@ -88,7 +88,7 @@ Implementován je export zpracovaného volumetrického modelu do vrstveného sou
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Závěr}
 \label{sec:zaver}
-Vytovřené řešení je vhodné pro práci s obvyklými DICOM datasety o rozumných velikostech. Problematika formátů je zkrátka příliš široká a hluboká, aby aplikace dokázala zpracovat všechny možné podoby dat, a tak jsem se omezil na nejvíce užitečný výřez. Provedení vizualizace nemusí být vhodné pro snímky ve velmi vysokém rozlišení\footnote{Celá data jsou zkopírována do interní struktury PyVista a rotace ani resamplování nemůže být provedeno \emph{in place}}. Omezující je i zastaralý \href{https://github.com/gromgull/py-vox-io}{py-vox-io} a samotný formát .vox\cite{bib:magicavoxel-vox}, který podporuje pouze rozměry do 256 a jehož specifikace sice kanál pro průhlednost má, MagicaVoxel ji ale neumí. V budoucnu bych také rád přidal funkci přímo na vytvoření meshe pomocí algoritmu Marching Cubes\cite{bib:marchingcubes} a nedestruktivní postup přeškálování. Na základní práci ale aplikace plně stačí.
+Vytvořené řešení je vhodné pro práci s obvyklými DICOM datasety o rozumných velikostech. Problematika formátů je zkrátka příliš široká a hluboká, aby aplikace dokázala zpracovat všechny možné podoby dat, a tak jsem se omezil na nejvíce užitečný výřez. Provedení vizualizace nemusí být vhodné pro snímky ve velmi vysokém rozlišení\footnote{Celá data jsou zkopírována do interní struktury PyVista a rotace ani resamplování nemůže být provedeno \emph{in place}}. Omezující je i zastaralý \href{https://github.com/gromgull/py-vox-io}{py-vox-io} a samotný formát .vox\cite{bib:magicavoxel-vox}, který podporuje pouze rozměry do 256 a jehož specifikace sice kanál pro průhlednost má, MagicaVoxel ji ale neumí. V budoucnu bych také rád přidal funkci přímo na vytvoření meshe pomocí algoritmu Marching Cubes\cite{bib:marchingcubes} a nedestruktivní postup přeškálování. Na základní práci ale aplikace plně stačí.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Bibliography
