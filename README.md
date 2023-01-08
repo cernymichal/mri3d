@@ -20,12 +20,14 @@ Interpolation is done trilinearly.
 
 - Python 3.9.13
 
-Preferably use a virtual environment:
+Preferably use a virtual environment
 
 ```sh
 python -m venv .venv
 ./.venv/Scripts/activate
 ```
+
+Install dependencies
 
 ```sh
 pip install -r requirements.txt --use-pep517
@@ -45,14 +47,14 @@ pytest
 
 ## Fixing DICOM files
 
-converts potentially non-stantdard files to complient ones (`../fixed/`)
+Convert potentially non-standard files to complient ones (`../fixed/`)
 
 ```sh
 find . -type d -exec mkdir -p -- ../fixed/{}
 find -type f | xargs -L 1 -d '\n' -P 12 -I '{}' dcmconv --replace-wrong-delim --ignore-parse-errors "{}" "../fixed/{}"
 ```
 
-generates DICOMDIR file for images in `DICOM`
+Generate DICOMDIR file for images in `DICOM`
 
 ```sh
 dcmmkdir --recurse -Pdv --invent DICOM/

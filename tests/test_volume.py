@@ -6,7 +6,8 @@ from mri3d.src import volume
 import pytest
 
 # TODO in_bounds
-# TODO interpolation
+# TODO read_array_zero_padded
+# TODO trilinear_interpolation
 # TODO interpolate_volume_data_parallel
 # TODO interpolate_volume_data
 

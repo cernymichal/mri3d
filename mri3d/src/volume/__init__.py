@@ -12,13 +12,21 @@ VOX_PALLETE_ALPHA = [(255, 255, 255, i) for i in range(256)]
 VOX_PALLETE_GRAYSCALE = [(i, i, i, 255) for i in range(256)]
 
 
-@njit(fastmath=True)
+@njit()
 def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
     '''
     check if index (x, y, z) is contained in an array
     '''
 
     return x < shape[0] and y < shape[1] and z < shape[2]
+
+
+@njit()
+def read_array_zero_padded(array: np.ndarray, x: int, y: int, z: int):
+    '''
+    read from array is if it was zero padded infinitely
+    '''
+    return array[x, y, z] if in_bounds(x, y, z, array.shape) else 0
 
 
 @njit(fastmath=True)
@@ -37,22 +45,14 @@ def trilinear_interpolation(volume: np.ndarray, sample: np.ndarray) -> float:
     xd, yd, zd = sample % 1
 
     # zeroes if sample points are out of bounds
-    c000 = volume[bl[0], bl[1], bl[2]] if in_bounds(
-        bl[0], bl[1], bl[2], volume.shape) else 0
-    c001 = volume[bl[0], bl[1], tr[2]] if in_bounds(
-        bl[0], bl[1], tr[2], volume.shape) else 0
-    c010 = volume[bl[0], tr[1], bl[2]] if in_bounds(
-        bl[0], tr[1], bl[2], volume.shape) else 0
-    c011 = volume[bl[0], tr[1], tr[2]] if in_bounds(
-        bl[0], tr[1], tr[2], volume.shape) else 0
-    c100 = volume[tr[0], bl[1], bl[2]] if in_bounds(
-        tr[0], bl[1], bl[2], volume.shape) else 0
-    c101 = volume[tr[0], bl[1], tr[2]] if in_bounds(
-        tr[0], bl[1], tr[2], volume.shape) else 0
-    c110 = volume[tr[0], tr[1], bl[2]] if in_bounds(
-        tr[0], tr[1], bl[2], volume.shape) else 0
-    c111 = volume[tr[0], tr[1], tr[2]] if in_bounds(
-        tr[0], tr[1], tr[2], volume.shape) else 0
+    c000 = read_array_zero_padded(volume, bl[0], bl[1], bl[2])
+    c001 = read_array_zero_padded(volume, bl[0], bl[1], tr[2])
+    c010 = read_array_zero_padded(volume, bl[0], tr[1], bl[2])
+    c011 = read_array_zero_padded(volume, bl[0], tr[1], tr[2])
+    c100 = read_array_zero_padded(volume, tr[0], bl[1], bl[2])
+    c101 = read_array_zero_padded(volume, tr[0], bl[1], tr[2])
+    c110 = read_array_zero_padded(volume, tr[0], tr[1], bl[2])
+    c111 = read_array_zero_padded(volume, tr[0], tr[1], tr[2])
 
     # interpolate along x
     c00 = c000 * (1 - xd) + c100 * xd
