@@ -81,7 +81,7 @@ class ChooseSeriesView(View):
 
         return True
 
-    def get_chosen_values(self) -> tuple[pydicom.dataset.Dataset | None, pydicom.dataset.Dataset | None, pydicom.dataset.Dataset | None]:
+    def get_chosen_values(self) -> tuple[pydicom.Dataset | None, pydicom.Dataset | None, pydicom.Dataset | None]:
         '''
         returns the values chosen from the dataset
         '''

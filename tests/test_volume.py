@@ -17,24 +17,30 @@ IN_CI = 'IN_CI' in os.environ
 
 
 @pytest.fixture
-def test_array():
-    """np.arange(27).reshape((3,3,3))"""
+def testing_array():
+    """
+    np.arange(27).reshape((3,3,3))
+    """
 
     return np.arange(27).reshape((3, 3, 3))
 
 
 @pytest.fixture
-def test_volume(test_array: np.ndarray):
-    """Volume for testing"""
+def testing_volume(testing_array: np.ndarray):
+    """
+    Volume for testing
+    """
 
-    return Volume(test_array, (1, .5, .5), (-1, 50))
+    return Volume(testing_array, (1, .5, .5), (-1, 50))
 
 
 @pytest.fixture
-def test_volume_half(test_volume: Volume):
-    """downsampled Volume for testing"""
+def testing_volume_half(testing_volume: Volume):
+    """
+    downsampled Volume for testing
+    """
 
-    return Volume.halfsample(test_volume)
+    return Volume.halfsample(testing_volume)
 
 
 @pytest.mark.parametrize(
@@ -61,11 +67,11 @@ def test_in_bounds(idx: tuple[int, int, int], shape: tuple[int, int, int], expec
         ((-1, 0, 0), 0),
         ((30, 30, 30), 0),
     ])
-def test_read_array_zero_padded(test_array: np.ndarray, idx: tuple[int, int, int], expected: int) -> None:
+def test_read_array_zero_padded(testing_array: np.ndarray, idx: tuple[int, int, int], expected: int) -> None:
     """
     test read_array_zero_padded
     """
-    assert expected == volume.read_array_zero_padded(test_array, *idx)
+    assert expected == volume.read_array_zero_padded(testing_array, *idx)
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
@@ -77,16 +83,16 @@ def test_read_array_zero_padded(test_array: np.ndarray, idx: tuple[int, int, int
         ((-1, 0, 0), 0),
         ((2.5, 1, .3), 10.65),
     ])
-def test_trilinear_interpolation(test_volume: Volume, idx: tuple[float, float, float], expected: float) -> None:
+def test_trilinear_interpolation(testing_volume: Volume, idx: tuple[float, float, float], expected: float) -> None:
     """
     test trilinear_interpolation
     """
     assert expected == volume.trilinear_interpolation(
-        test_volume.data, np.array(idx))
+        testing_volume.data, np.array(idx))
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
-def test_interpolate_volume_data_parallel(test_volume: Volume) -> None:
+def test_interpolate_volume_data_parallel(testing_volume: Volume) -> None:
     """
     test interpolate_volume_data_parallel
     """
@@ -111,16 +117,17 @@ def test_interpolate_volume_data_parallel(test_volume: Volume) -> None:
                           [6, 6, 6, 3]]])
 
     result_shape = np.ceil(
-        np.array(test_volume.data.shape) * factor).astype(np.uint)
-    result = np.empty(result_shape, dtype=test_volume.data.dtype)
+        np.array(testing_volume.data.shape) * factor).astype(np.uint)
+    result = np.empty(result_shape, dtype=testing_volume.data.dtype)
 
-    volume.interpolate_volume_data_parallel(test_volume.data, result, factor)
+    volume.interpolate_volume_data_parallel(
+        testing_volume.data, result, factor)
 
     assert (expected == result).all()
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
-def test_interpolate_volume_data(test_volume: Volume) -> None:
+def test_interpolate_volume_data(testing_volume: Volume) -> None:
     """
     test interpolate_volume_data
     """
@@ -142,9 +149,9 @@ def test_interpolate_volume_data(test_volume: Volume) -> None:
                          [[9, 9, 9, 5],
                           [10, 10, 11, 5],
                           [11, 11, 12, 6],
-                          [6, 6, 6, 3]]], dtype=test_volume.data.dtype)
+                          [6, 6, 6, 3]]], dtype=testing_volume.data.dtype)
 
-    result = volume.interpolate_volume_data(test_volume.data, factor)
+    result = volume.interpolate_volume_data(testing_volume.data, factor)
 
     assert (expected == result).all()
 
@@ -172,15 +179,15 @@ def test_interpolate_volume_data(test_volume: Volume) -> None:
                            [9, 10, 11],
                            [18, 19, 20]]])),
     ])
-def test_rotate90(test_volume: Volume, axis: int, k: int, expected: np.ndarray) -> None:
+def test_rotate90(testing_volume: Volume, axis: int, k: int, expected: np.ndarray) -> None:
     """
     test rotate90
     """
 
-    assert (expected == Volume.rotate90(test_volume, axis, k=k).data).all()
+    assert (expected == Volume.rotate90(testing_volume, axis, k=k).data).all()
 
 
-def test_halfsample(test_volume: Volume) -> None:
+def test_halfsample(testing_volume: Volume) -> None:
     """
     test halfsample
     """
@@ -190,7 +197,7 @@ def test_halfsample(test_volume: Volume) -> None:
                          [[18, 20],
                           [24, 26]]])
 
-    assert (expected == Volume.halfsample(test_volume).data).all()
+    assert (expected == Volume.halfsample(testing_volume).data).all()
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
@@ -218,16 +225,16 @@ def test_halfsample(test_volume: Volume) -> None:
                        [[18, 20],
                         [24, 26]]]))
     ])
-def test_resample(test_volume: Volume, factor: float, expected: np.ndarray) -> None:
+def test_resample(testing_volume: Volume, factor: float, expected: np.ndarray) -> None:
     """
     test resample
     """
 
-    assert (expected == Volume.resample(test_volume, factor).data).all()
+    assert (expected == Volume.resample(testing_volume, factor).data).all()
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
-def test_normalize_spacing(test_volume: Volume) -> None:
+def test_normalize_spacing(testing_volume: Volume) -> None:
     """
     test normalize_spacing
     """
@@ -252,21 +259,21 @@ def test_normalize_spacing(test_volume: Volume) -> None:
                                [10, 11, 11],
                                [12, 12, 13]]])
 
-    normalized = Volume.normalize_spacing(test_volume)
+    normalized = Volume.normalize_spacing(testing_volume)
 
     assert expected_spacing == normalized.spacing
     assert (expected_data == normalized.data).all()
 
 
 @pytest.mark.skipif(IN_CI, reason="numba fails in test environment")
-def test_normalized(test_volume: Volume) -> None:
+def test_normalized(testing_volume: Volume) -> None:
     """
     test normalized
     """
 
-    normalized = Volume.normalize_spacing(test_volume)
+    normalized = Volume.normalize_spacing(testing_volume)
 
-    assert not test_volume.normalized()
+    assert not testing_volume.normalized()
     assert normalized.normalized()
 
 
@@ -335,21 +342,21 @@ def delete_temp_files():
 
 # TODO TIFF test fails in test environment
 @pytest.mark.skipif(IN_CI, reason="maybe crlf x lf?")
-def test_save_to_tiff(test_volume_half: Volume) -> None:
+def test_save_to_tiff(testing_volume_half: Volume) -> None:
     """
     test save_to_tiff
     """
 
-    test_volume_half.save_to_tiff(TIFF_TEMP_PATH)
+    testing_volume_half.save_to_tiff(TIFF_TEMP_PATH)
 
     assert filecmp.cmp(TIFF_TEST_PATH, TIFF_TEMP_PATH)
 
 
-def test_save_to_vox(test_volume_half: Volume) -> None:
+def test_save_to_vox(testing_volume_half: Volume) -> None:
     """
     test save_to_vox
     """
 
-    test_volume_half.save_to_vox(VOX_TEMP_PATH)
+    testing_volume_half.save_to_vox(VOX_TEMP_PATH)
 
     assert filecmp.cmp(VOX_TEST_PATH, VOX_TEMP_PATH)

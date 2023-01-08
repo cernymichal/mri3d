@@ -11,7 +11,10 @@ from pylint.reporters import CollectingReporter
 
 @pytest.fixture
 def linter():
-    """Test codestyle for mri3d"""
+    """
+    Test codestyle for mri3d
+    """
+
     rep = CollectingReporter()
 
     r = Run(
@@ -25,7 +28,10 @@ def linter():
 
 @pytest.mark.parametrize("limit", [10])
 def test_codestyle_score(linter, limit, runs=[]):  # pylint: disable=dangerous-default-value
-    """Evaluate codestyle for different thresholds."""
+    """
+    Evaluate codestyle for different thresholds.
+    """
+
     if len(runs) == 0:
         print("\npylint output:")
         for m in linter.reporter.messages:

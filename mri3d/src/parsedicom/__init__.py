@@ -15,7 +15,7 @@ from .dicom_indices import *
 UNKNOWN_VALUE = 'UNKNOWN'
 
 
-def get_tag_value(dataset: pydicom.dataset.Dataset, tag: Any) -> Any:
+def get_tag_value(dataset: pydicom.Dataset, tag: Any) -> Any:
     '''
     safely get value from dataset, returns UNKNOWN_VALUE if dataset doesnt contain tag
     '''
@@ -30,6 +30,7 @@ class Dataset:
     '''
     holds the pydicom Dataset together with filesystem information
     '''
+    # TODO DicomDir is deprecated - https://pydicom.github.io/pydicom/stable/tutorials/filesets.html
 
     def __init__(self, path: Path):
         self.base_dir = path
@@ -52,7 +53,7 @@ class Dataset:
         return str(self.ds)
 
 
-def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+def get_studies(patient: pydicom.Dataset) -> list[pydicom.Dataset]:
     '''
     returns all studies from a patient's pydicom Dataset
     '''
@@ -60,7 +61,7 @@ def get_studies(patient: pydicom.dataset.Dataset) -> list[pydicom.dataset.Datase
     return [child for child in patient.children if child.DirectoryRecordType == "STUDY"]
 
 
-def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+def get_series(study: pydicom.Dataset) -> list[pydicom.Dataset]:
     '''
     returns all series from a study's pydicom Dataset
     '''
@@ -68,7 +69,7 @@ def get_series(study: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
     return [child for child in study.children if child.DirectoryRecordType == "SERIES"]
 
 
-def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]:
+def get_images(series: pydicom.Dataset) -> list[pydicom.Dataset]:
     '''
     returns all images from a series' pydicom Dataset
     '''
@@ -76,7 +77,7 @@ def get_images(series: pydicom.dataset.Dataset) -> list[pydicom.dataset.Dataset]
     return [child for child in series.children if child.DirectoryRecordType == "IMAGE"]
 
 
-def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
+def create_volume(images: list[pydicom.Dataset], ds: Dataset) -> Volume:
     '''
     returns a Volume composited from DICOM slice images
     '''
@@ -118,7 +119,7 @@ class Patient:
     identification: str
 
     @classmethod
-    def from_dicom(cls, patient: pydicom.dataset.Dataset) -> Patient:
+    def from_dicom(cls, patient: pydicom.Dataset) -> Patient:
         '''
         returns a Patient parsed from a paydicom Dataset
         '''
@@ -141,7 +142,7 @@ class Series:
     study_description: str
 
     @classmethod
-    def from_dicom(cls, study: pydicom.dataset.Dataset, series: pydicom.dataset.Dataset) -> Series:
+    def from_dicom(cls, study: pydicom.Dataset, series: pydicom.Dataset) -> Series:
         '''
         returns a Series parsed from a paydicom Dataset
         '''
