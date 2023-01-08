@@ -12,7 +12,7 @@ The loaded volume can also be munipulated with:
 - Downsampling twice
 - Resampling along one axis to normalize physical texel size
 
-Interpolation is done trilinearly.
+Interpolation is done trilinearly
 
 \*All of these operations can take some time, especially resampling, even though it's multithreaded and compiled.
 
@@ -38,6 +38,8 @@ pip install -r requirements.txt --use-pep517
 ```sh
 py mri3d
 ```
+
+`samples` contains some demo datasets
 
 ## Testing
 
