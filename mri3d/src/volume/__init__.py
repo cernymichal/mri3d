@@ -12,6 +12,20 @@ VOX_PALLETE_ALPHA = [(255, 255, 255, i) for i in range(256)]
 VOX_PALLETE_GRAYSCALE = [(i, i, i, 255) for i in range(256)]
 
 
+def value_range_bits(dtype: np.dtype, bits: int) -> tuple[float, float]:
+    '''
+    returns a value_range representable in dtype with bits
+    '''
+
+    if np.issubdtype(dtype, np.unsignedinteger):
+        return (0, 2 ** bits - 1)
+
+    if np.issubdtype(dtype, np.signedinteger):
+        return (-2 ** (bits - 1), 2 ** (bits - 1) - 1)
+
+    return (float('-inf'), float('inf'))
+
+
 @njit()
 def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
     '''
@@ -89,6 +103,7 @@ def interpolate_volume_data(volume: np.ndarray, factor: np.ndarray) -> np.ndarra
 
     - wraps interpolate_volume_data_parallel for convenience
     '''
+    # TODO interpolated values precision loss due to uint cast
 
     resulting_shape = np.ceil(
         np.array(volume.data.shape) * factor).astype(np.uint)
@@ -107,18 +122,20 @@ class Volume:
     - value_range is only really useful for intergral data types
     '''
 
-    def __init__(self, data: np.ndarray, spacing: tuple[float], bits_per_sample: int):
+    def __init__(self, data: np.ndarray, spacing: tuple[float] = (1, 1, 1), value_range: tuple[float, float] = None, bits_per_sample: int = 16):
+        '''
+        creates a new Volume
+
+        - default value_range is (data.min(), data.max())
+        '''
+
         self.data = data
         self.spacing = spacing
+        self.value_range = value_range
         self.bits_per_sample = bits_per_sample
 
-        if np.issubdtype(self.data.dtype, np.unsignedinteger):
-            self.value_range = (0, 2 ** self.bits_per_sample - 1)
-        elif np.issubdtype(self.data.dtype, np.signedinteger):
-            self.value_range = (-2 ** (self.bits_per_sample - 1),
-                                2 ** (self.bits_per_sample - 1) - 1)
-        else:
-            self.value_range = (float('-inf'), float('inf'))
+        if self.value_range is None:
+            self.recalculate_value_range()
 
     @staticmethod
     def rotate90(volume: Volume, axis: int, k: int = 1) -> Volume:
@@ -136,7 +153,7 @@ class Volume:
             new_spacing[axes[0]], new_spacing[axes[1]
                                               ] = new_spacing[axes[1]], new_spacing[axes[0]]
 
-        return Volume(data, tuple(new_spacing), volume.bits_per_sample)
+        return Volume(data, spacing=tuple(new_spacing), value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
 
     @staticmethod
     def halfsample(volume: Volume) -> Volume:
@@ -146,7 +163,7 @@ class Volume:
         returns the generated Volume
         '''
 
-        return Volume(volume.data[::2, ::2, ::2], volume.spacing, volume.bits_per_sample)
+        return Volume(volume.data[::2, ::2, ::2], spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
 
     @staticmethod
     def resample(volume: Volume, factor: float) -> Volume:
@@ -156,7 +173,18 @@ class Volume:
         returns the generated Volume
         '''
 
-        return Volume(interpolate_volume_data(volume.data, np.ones(3) * factor), volume.spacing, volume.bits_per_sample)
+        return Volume(interpolate_volume_data(volume.data, np.ones(3) * factor), spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
+
+    @staticmethod
+    def get_bottom_half(volume: Volume) -> Volume:
+        '''
+        returns the volume as if sliced in half
+        '''
+
+        sliced_data = np.copy(volume.data)
+        sliced_data[:, :, sliced_data.shape[2] // 2:-1] = 0
+
+        return Volume(sliced_data, spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
 
     @staticmethod
     def normalize_spacing(volume: Volume) -> Volume:
@@ -178,7 +206,17 @@ class Volume:
         new_spacing = list(volume.spacing)
         new_spacing[max_axis] = min_spacing
 
-        return Volume(interpolate_volume_data(volume.data, factor), tuple(new_spacing), volume.bits_per_sample)
+        return Volume(interpolate_volume_data(volume.data, factor), spacing=tuple(new_spacing), value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
+
+    def recalculate_value_range(self) -> Volume:
+        '''
+        sets value_range to (data.min(), data.max())
+
+        returns self
+        '''
+
+        self.value_range = (self.data.min(), self.data.max())
+        return self
 
     def save_to_tiff(self, filepath: Path) -> None:
         '''

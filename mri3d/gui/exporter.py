@@ -9,7 +9,7 @@ import PySimpleGUIQt as sg
 from src import ApplicationState
 from src.volume import Volume
 from .volume_plotter import ViewWithVolumePlot
-from . import ICON, DISABLED_BUTTON_COLORS, popup_error
+from . import ICON, DISABLED_BUTTON_COLORS, VERTICAL_SPACER, popup_error
 
 
 class StateView(ViewWithVolumePlot):
@@ -65,18 +65,27 @@ class MainView(StateView):
     preview and rotate volume, offers export options
     '''
 
-    WORKING_EVENTS = ['-rx-', '-ry-', '-rz-', '-su-',
-                      '-sd-', '-normalize-', '-tiff-path-', '-vox-path-']
+    WORKING_EVENTS = ['-rx-', '-ry-', '-rz-', '-su-', '-sd-', '-normalize-',
+                      '-slice-', '-reset-preview-', '-tiff-path-', '-vox-path-']
 
     def __init__(self, state: ApplicationState) -> None:
         self.state = state
 
-        layout = [[sg.Column([[sg.Button('  Rotate X  ', key='-rx-')],
-                              [sg.Button('  Rotate Y  ', key='-ry-')],
-                              [sg.Button('  Rotate Z  ', key='-rz-')],
-                              [sg.Button('  Upsample 2x  ', key='-su-')],
-                              [sg.Button('  Downsample 2x  ', key='-sd-')],
-                              [sg.Button('  Normalize  ', key='-normalize-')]]), sg.Column([[]], key='-plot-')],
+        tool_column = [[sg.Text('  Rotate  ', justification='center')],
+                       [sg.Button('  X  ', key='-rx-')],
+                       [sg.Button('  Y  ', key='-ry-')],
+                       [sg.Button('  Z  ', key='-rz-')],
+                       VERTICAL_SPACER,
+                       [sg.Text('  Resample  ', justification='center')],
+                       [sg.Button('  2x  ', key='-su-')],
+                       [sg.Button('  0.5x  ', key='-sd-')],
+                       [sg.Button('  Normalize  ', key='-normalize-')]]
+
+        preview_control_column = [[sg.Text('  Preview  ', justification='center')],
+                                  [sg.Button('  Slice  ', key='-slice-')],
+                                  [sg.Button('  Reset  ', key='-reset-preview-')]]
+
+        layout = [[sg.Column([*tool_column, VERTICAL_SPACER, [sg.HorizontalSeparator()], VERTICAL_SPACER, *preview_control_column]), sg.Column([[]], key='-plot-')],
                   [sg.Stretch(),
                    sg.SaveAs('  Save TIFF  ', key='-save-tiff-', target='-tiff-path-',
                              file_types=(("TIFF Files", "*.tiff"), ("ALL Files", "*"))),
@@ -111,6 +120,10 @@ class MainView(StateView):
             self.resample(event[2])
         elif event == '-normalize-':
             self.normalize()
+        elif event == '-slice-':
+            self.plotter.plot_volume(Volume.get_bottom_half(self.state.volume))
+        elif event == '-reset-preview-':
+            self.plotter.plot_volume(self.state.volume)
         elif event == '-tiff-path-' and values['-tiff-path-']:
             self.save_to_tiff(values['-tiff-path-'])
         elif event == '-vox-path-' and values['-vox-path-']:

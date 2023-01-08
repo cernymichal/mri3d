@@ -14,8 +14,6 @@ from .icon import ICON_HEAD
 TITLE = 'mri3d'
 ICON = ICON_HEAD
 
-DISABLED_BUTTON_COLORS = ('white', 'gray')
-
 # setting up the environment
 os.environ["QT_API"] = "pyside2"
 
@@ -30,6 +28,10 @@ if sys.platform.startswith('win'):
     if not sys.argv[0].endswith('.exe'):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
             'CompanyName.ProductName.SubProduct.VersionInformation')
+
+
+DISABLED_BUTTON_COLORS = ('white', 'gray')
+VERTICAL_SPACER = [sg.Text(size=(1, .5))]
 
 
 class View:

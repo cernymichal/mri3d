@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import numpy as np
 import pydicom
-from ..volume import Volume
+from ..volume import Volume, value_range_bits
 from .dicom_indices import *
 
 
@@ -97,8 +97,14 @@ def create_volume(images: list[pydicom.dataset.Dataset], ds: Dataset) -> Volume:
 
     pixel_data = np.array([slice.pixel_array for slice in slices])
     spacing = (slices[0].SliceThickness, *slices[0].PixelSpacing)
+    value_range = None
+    bits_per_sample = slices[0][IMAGE_BITS_STORED_INDEX].value
 
-    return Volume(pixel_data, spacing, slices[0][IMAGE_BITS_STORED_INDEX].value)
+    # set value_range to representable values if integral
+    if np.issubdtype(pixel_data.dtype, np.integer):
+        value_range = value_range_bits(pixel_data.dtype, bits_per_sample)
+
+    return Volume(pixel_data, spacing=spacing, value_range=value_range, bits_per_sample=bits_per_sample)
 
 
 @dataclass
