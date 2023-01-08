@@ -16,6 +16,10 @@ Interpolation is done trilinearly
 
 \*All of these operations can take some time, especially resampling, even though it's multithreaded and compiled.
 
+<p align="center">
+  <img src="./report/images/main_view.png">
+</p>
+
 ## Installation
 
 - Python 3.9.13
