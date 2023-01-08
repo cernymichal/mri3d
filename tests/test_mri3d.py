@@ -9,7 +9,7 @@ from pylint.lint import Run
 from pylint.reporters import CollectingReporter
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def linter():
     """
     Test codestyle for mri3d

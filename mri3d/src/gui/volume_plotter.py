@@ -7,7 +7,7 @@ from typing import Any
 from PySide2.QtWidgets import QVBoxLayout
 from pyvistaqt import QtInteractor
 import pyvista as pv
-from src.volume import Volume
+from ..volume import Volume
 from . import View
 
 OPACITY_TRANSFER_LINEAR = 'linear'

@@ -5,9 +5,9 @@ an application for opening, reviewing, slightly adjusting and exporting dicom mr
 from __future__ import annotations
 import traceback
 import pydicom.errors
-from gui import popup_error
-from gui.dicomdir import get_dicomdir, ChooseSeriesView
-from gui.exporter import MainView
+from src.gui import popup_error
+from src.gui.dicomdir import get_dicomdir, ChooseSeriesView
+from src.gui.exporter import MainView
 from src import ApplicationState, Patient, Series
 from src import parsedicom
 

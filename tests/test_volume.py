@@ -16,7 +16,7 @@ from mri3d.src.volume import Volume
 IN_CI = 'IN_CI' in os.environ
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_array():
     """
     np.arange(27).reshape((3,3,3))
@@ -25,7 +25,7 @@ def testing_array():
     return np.arange(27).reshape((3, 3, 3))
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_volume(testing_array: np.ndarray):
     """
     Volume for testing
@@ -34,7 +34,7 @@ def testing_volume(testing_array: np.ndarray):
     return Volume(testing_array, (1, .5, .5), (-1, 50))
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_volume_half(testing_volume: Volume):
     """
     downsampled Volume for testing

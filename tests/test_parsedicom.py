@@ -18,7 +18,7 @@ TEST_DATASET_PATH = os.path.join(TEST_DIR, 'test-dataset', 'DICOMDIR')
 TEST_VOLUME_PATH = os.path.join(TEST_DIR, 'test-volume.npy')
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_dataset():
     """
     loaded ./test-dataset
@@ -27,7 +27,7 @@ def testing_dataset():
     return Dataset(TEST_DATASET_PATH)
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_patient_ds(testing_dataset: Dataset):
     """
     first patient from testing_dataset
@@ -36,7 +36,7 @@ def testing_patient_ds(testing_dataset: Dataset):
     return testing_dataset.ds.patient_records[0]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_study_ds(testing_patient_ds: pydicom.Dataset):
     """
     first study from testing_dataset
@@ -45,7 +45,7 @@ def testing_study_ds(testing_patient_ds: pydicom.Dataset):
     return parsedicom.get_studies(testing_patient_ds)[0]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_series_ds(testing_study_ds: pydicom.Dataset):
     """
     first series from testing_dataset
@@ -54,7 +54,7 @@ def testing_series_ds(testing_study_ds: pydicom.Dataset):
     return parsedicom.get_series(testing_study_ds)[0]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testing_images(testing_series_ds: pydicom.Dataset):
     """
     first imageset from testing_dataset

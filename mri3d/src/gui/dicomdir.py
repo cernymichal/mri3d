@@ -8,9 +8,9 @@ from pathlib import Path
 import os
 import PySimpleGUIQt as sg
 import pydicom
-from src import parsedicom
-from src.parsedicom import get_tag_value
-from src.parsedicom.dicom_indices import PATIENT_NAME_INDEX, PATIENT_ID_INDEX, STUDY_ID_INDEX, STUDY_DESCRIPTION_INDEX, SERIES_NUMBER_INDEX
+from .. import parsedicom
+from ..parsedicom import get_tag_value
+from ..parsedicom.dicom_indices import PATIENT_NAME_INDEX, PATIENT_ID_INDEX, STUDY_ID_INDEX, STUDY_DESCRIPTION_INDEX, SERIES_NUMBER_INDEX
 from . import TITLE, ICON, View
 
 

@@ -6,8 +6,8 @@ from __future__ import annotations
 from typing import Any
 import traceback
 import PySimpleGUIQt as sg
-from src import ApplicationState
-from src.volume import Volume
+from .. import ApplicationState
+from ..volume import Volume
 from .volume_plotter import ViewWithVolumePlot
 from . import ICON, DISABLED_BUTTON_COLORS, VERTICAL_SPACER, popup_error
 
