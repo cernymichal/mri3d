@@ -4,8 +4,13 @@ Test mri3d.gui
 
 # pylint: disable=redefined-outer-name
 
+import os
 import pytest
 from mri3d import gui
+
+
+# TODO numba fails in test environment
+IN_CI = 'IN_CI' in os.environ
 
 
 # series options mock data

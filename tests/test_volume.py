@@ -270,6 +270,47 @@ def test_normalized(test_volume: Volume) -> None:
     assert normalized.normalized()
 
 
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (np.array([[[0, 2],
+                    [6, 8]],
+                   [[18, 20],
+                    [24, 26]]]), np.array([[[0, 2],
+                                            [6, 8]],
+                                           [[18, 20],
+                                            [24, 26]]])),
+        (np.arange(27).reshape((3, 3, 3)), np.array([[[0, 0, 2],
+                                                      [3, 0, 5],
+                                                      [6, 0, 8]],
+                                                     [[9, 0, 11],
+                                                      [12, 0, 14],
+                                                      [15, 0, 17]],
+                                                     [[18, 0, 20],
+                                                      [21, 0, 23],
+                                                      [24, 0, 26]]]))
+    ])
+def test_get_bottom_half(data: np.ndarray, expected: np.ndarray) -> None:
+    """
+    test get_bottom_half
+    """
+
+    print(Volume.get_bottom_half(Volume(data)).data)
+
+    assert (expected == Volume.get_bottom_half(Volume(data)).data).all()
+
+
+def get_bottom_half(volume: Volume) -> Volume:
+    '''
+    returns the volume as if sliced in half
+    '''
+
+    sliced_data = np.copy(volume.data)
+    sliced_data[:, :, sliced_data.shape[2] // 2:-1] = 0
+
+    return Volume(sliced_data, spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
+
+
 TEST_DIR = os.path.dirname(__file__)
 TIFF_TEMP_PATH = os.path.join(TEST_DIR, 'tiff.temp')
 TIFF_TEST_PATH = os.path.join(TEST_DIR, 'test.tiff')

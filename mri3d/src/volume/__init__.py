@@ -176,17 +176,6 @@ class Volume:
         return Volume(interpolate_volume_data(volume.data, np.ones(3) * factor), spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
 
     @staticmethod
-    def get_bottom_half(volume: Volume) -> Volume:
-        '''
-        returns the volume as if sliced in half
-        '''
-
-        sliced_data = np.copy(volume.data)
-        sliced_data[:, :, sliced_data.shape[2] // 2:-1] = 0
-
-        return Volume(sliced_data, spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
-
-    @staticmethod
     def normalize_spacing(volume: Volume) -> Volume:
         '''
         resample the volume data along one axis so that uniform spacing is achieved
@@ -207,6 +196,17 @@ class Volume:
         new_spacing[max_axis] = min_spacing
 
         return Volume(interpolate_volume_data(volume.data, factor), spacing=tuple(new_spacing), value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
+
+    @staticmethod
+    def get_bottom_half(volume: Volume) -> Volume:
+        '''
+        returns the volume as if sliced in half
+        '''
+
+        sliced_data = np.copy(volume.data)
+        sliced_data[:, :, sliced_data.shape[2] // 2:-1] = 0
+
+        return Volume(sliced_data, spacing=volume.spacing, value_range=volume.value_range, bits_per_sample=volume.bits_per_sample)
 
     def recalculate_value_range(self) -> Volume:
         '''
