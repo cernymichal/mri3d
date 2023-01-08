@@ -2,6 +2,8 @@
 Test mri3d root module
 """
 
+# pylint: disable=redefined-outer-name
+
 import pytest
 from pylint.lint import Run
 from pylint.reporters import CollectingReporter
@@ -22,7 +24,7 @@ def linter():
 
 
 @pytest.mark.parametrize("limit", [10])
-def test_codestyle_score(linter, limit, runs=[]):
+def test_codestyle_score(linter, limit, runs=[]):  # pylint: disable=dangerous-default-value
     """Evaluate codestyle for different thresholds."""
     if len(runs) == 0:
         print("\npylint output:")

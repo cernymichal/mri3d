@@ -2,8 +2,10 @@
 Test mri3d.src.parsedicom
 """
 
-from mri3d.src import parsedicom
+# pylint: disable=redefined-outer-name
+
 import pytest
+from mri3d.src import parsedicom
 
 
 # @pytest.mark.parametrize(

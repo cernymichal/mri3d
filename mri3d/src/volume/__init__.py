@@ -32,7 +32,7 @@ def in_bounds(x: int, y: int, z: int, shape: tuple[int, int, int]) -> bool:
     check if index (x, y, z) is contained in an array
     '''
 
-    return x >= 0 and x < shape[0] and y >= 0 and y < shape[1] and z >= 0 and z < shape[2]
+    return 0 <= x < shape[0] and 0 <= y < shape[1] and 0 <= z < shape[2]
 
 
 @njit()
